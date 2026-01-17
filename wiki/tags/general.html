@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tags General | Youvi Wiki</title>
+    <!-- Load header CSS FIRST to prevent layout shifts -->
+    <link rel="stylesheet" href="../../youvi/header/youvi-header.css">
+    <script>
+        (function() {
+            var theme = localStorage.getItem('youvi-theme');
+            var sidebar = localStorage.getItem('sidebarCollapsed');
+            
+            var htmlClasses = [];
+            if (theme === 'dark') htmlClasses.push('dark-theme');
+            else if (theme === 'skeuo') htmlClasses.push('skeuo-theme');
+            if (sidebar === 'true') htmlClasses.push('sidebar-collapsed');
+            if (htmlClasses.length) document.documentElement.className = htmlClasses.join(' ');
+        })();
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            width: 100%;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff;
+            color: #111;
+            max-width: 100vw;
+        }
+
+        .top-nav {
+            background: #d94b88;
+            border-bottom: 1px solid #c2185b;
+            padding: 4px 0;
+        }
+
+        .top-nav-content {
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 0 20px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .top-nav a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 12px;
+            padding: 2px 0;
+            transition: color 0.2s;
+        }
+
+        .top-nav a:hover {
+            color: #ffd6ea;
+        }
+
+        .top-nav a.active {
+            color: #ffd6ea;
+            font-weight: 600;
+        }
+
+        .sidebar-collapsed .sidebar,
+        html.sidebar-collapsed .sidebar,
+        body.sidebar-collapsed .sidebar {
+            width: 60px !important;
+            padding: 10px 8px !important;
+            display: block !important;
+            position: sticky !important;
+            top: 40px !important;
+            max-height: calc(var(--sidebar-max-height, 100vh) - 75px) !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+        }
+
+        body.dark-theme .sidebar-collapsed .sidebar,
+        body.dark-theme html.sidebar-collapsed .sidebar,
+        html.dark-theme .sidebar-collapsed .sidebar {
+            background: #1a1a1a !important;
+        }
+
+        .sidebar-collapsed .container,
+        html.sidebar-collapsed .container {
+            padding-left: 20px;
+        }
+
+        .sidebar-collapsed .main-content,
+        html.sidebar-collapsed .main-content {
+            margin-left: 0;
+        }
+        
+        .sidebar-collapsed .content-wrapper,
+        html.sidebar-collapsed .content-wrapper {
+            max-width: 1500px;
+        }
+
+        .sidebar-collapsed .sidebar-title,
+        html.sidebar-collapsed .sidebar-title {
+            display: none !important;
+        }
+
+        .sidebar-collapsed .sidebar-item,
+        html.sidebar-collapsed .sidebar-item {
+            padding: 8px !important;
+            padding-left: 5px !important;
+            padding-right: 8px !important;
+            justify-content: center !important;
+            border-left: 3px solid transparent !important;
+            border-radius: 4px;
+            font-size: 0 !important;
+        }
+
+        .sidebar-collapsed .sidebar-item:hover,
+        html.sidebar-collapsed .sidebar-item:hover {
+            background: rgba(255, 105, 180, 0.1);
+        }
+
+        .sidebar-collapsed .sidebar-item.active,
+        html.sidebar-collapsed .sidebar-item.active {
+            background: rgba(255, 105, 180, 0.15);
+        }
+
+        .sidebar-collapsed .sidebar-item svg,
+        .sidebar-collapsed .sidebar-item img,
+        html.sidebar-collapsed .sidebar-item svg,
+        html.sidebar-collapsed .sidebar-item img {
+            margin: 0 !important;
+            width: 20px !important;
+            height: 20px !important;
+            font-size: 16px !important;
+        }
+
+        .sidebar-collapsed .library-item,
+        .sidebar-collapsed .nav-item,
+        html.sidebar-collapsed .library-item,
+        html.sidebar-collapsed .nav-item {
+            justify-content: center !important;
+            gap: 0 !important;
+        }
+
+        .sidebar-collapsed .library-item span,
+        .sidebar-collapsed .nav-item span,
+        html.sidebar-collapsed .library-item span,
+        html.sidebar-collapsed .nav-item span {
+            display: none !important;
+        }
+
+        .sidebar-collapsed .library-item svg,
+        .sidebar-collapsed .nav-item svg,
+        html.sidebar-collapsed .library-item svg,
+        html.sidebar-collapsed .nav-item svg {
+            margin: 0 !important;
+        }
+
+        .sidebar-collapsed .sidebar-section:nth-child(3),
+        .sidebar-collapsed .sidebar-section:nth-child(4),
+        .sidebar-collapsed .sidebar-section:nth-child(5),
+        html.sidebar-collapsed .sidebar-section:nth-child(3),
+        html.sidebar-collapsed .sidebar-section:nth-child(4),
+        html.sidebar-collapsed .sidebar-section:nth-child(5) {
+            display: none !important;
+        }
+
+        .container {
+            width: 100%;
+            margin: 0;
+            padding: 0 20px 0 20px;
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+            min-height: calc(100vh - 200px);
+        }
+        
+        .content-wrapper {
+            display: flex;
+            flex: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 20px;
+        }
+
+        .header {
+            background: #FFE7F4;
+            padding: 0;
+            border-bottom: 1px solid #f2cfe1;
+            min-height: 40px;
+            width: 100%;
+        }
+        
+        body.dark-theme .header {
+            background: #2c1810 !important;
+            border-bottom: 1px solid #444 !important;
+        }
+
+        .header-content-wrapper {
+            display: flex;
+            align-items: center;
+            position: relative;
+            box-sizing: border-box;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 0 20px;
+            width: 100%;
+            min-height: 40px;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding-top: 20px;
+        }
+
+        .page-header {
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 16px 18px;
+            margin-bottom: 15px;
+        }
+
+        .page-title {
+            font-size: 21px;
+            font-weight: 600;
+            color: #111;
+            margin-bottom: 6px;
+        }
+
+        .page-desc {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .tech-section {
+            background: #fff;
+            border: 1px solid #e6e6e6;
+            border-radius: 6px;
+            padding: 16px 18px;
+            margin-bottom: 15px;
+        }
+
+        .tech-section h2 {
+            font-size: 18px;
+            margin: 0 0 10px 0;
+            color: #111;
+        }
+
+        .tech-section h3 {
+            font-size: 14px;
+            margin: 14px 0 8px 0;
+            color: #333;
+        }
+
+        .tech-section h4 {
+            font-size: 13px;
+            margin: 10px 0 6px 0;
+            color: #444;
+        }
+
+        .tech-section p {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.75;
+            margin: 8px 0;
+            text-align: justify;
+        }
+
+        .tech-section ul {
+            margin: 8px 0 8px 20px;
+        }
+
+        .tech-section ol {
+            margin: 8px 0 8px 20px;
+        }
+
+        .tech-section li {
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 6px 0;
+            color: #333;
+        }
+
+        .tech-section code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #d94b88;
+        }
+
+        .callout {
+            background: #fff5f9;
+            border: 1px solid #ffd6ea;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 12px 0;
+            color: #7a3c55;
+        }
+
+        .callout.info {
+            background: #f0f9ff;
+            border-color: #bae6fd;
+            color: #0369a1;
+        }
+
+        .toc {
+            background: #fafafa;
+            border: 1px dashed #e0e0e0;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 12px 0;
+        }
+
+        .tag-example {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #fff;
+            margin: 2px 4px 2px 0;
+            font-weight: 500;
+        }
+
+        .tag-ct { background: #67c5d6; }
+        .tag-gt { background: #6b7280; }
+        .tag-at { background: #a78bdb; }
+        .tag-nat { background: #9dd6a8; }
+        .tag-ser { background: #8db8d6; }
+        .tag-mt { background: #d4a373; }
+        .tag-ch { background: #6b9e4d; }
+        .tag-ge { background: #6b9bd1; }
+        .tag-au { background: #ef6c7d; }
+        .tag-st { background: #f28b8b; }
+        .tag-yr { background: #eab676; }
+
+        .toc a {
+            color: #111;
+            text-decoration: none;
+        }
+
+        .toc a:hover {
+            color: #ff69b4;
+            text-decoration: underline;
+        }
+
+        .breadcrumbs {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .breadcrumbs a {
+            color: #666;
+            text-decoration: none;
+        }
+
+        .breadcrumbs span {
+            color: #111;
+        }
+
+        body.dark-theme {
+            background: #000;
+            color: #ddd;
+        }
+
+        body.dark-theme .sidebar {
+            background: #1a1a1a;
+        }
+
+        body.dark-theme .page-header {
+            background: #1a1a1a;
+            border-color: #333;
+            color: #ddd;
+        }
+
+        body.dark-theme .page-title {
+            color: #fff;
+        }
+
+        body.dark-theme .page-desc {
+            color: #999;
+        }
+
+        body.dark-theme .tech-section {
+            background: #1a1a1a;
+            border-color: #333;
+        }
+
+        body.dark-theme .tech-section h2 {
+            color: #fff;
+        }
+
+        body.dark-theme .tech-section h3 {
+            color: #ddd;
+        }
+
+        body.dark-theme .tech-section h4 {
+            color: #ccc;
+        }
+
+        body.dark-theme .tech-section p {
+            color: #ccc;
+        }
+
+        body.dark-theme .tech-section li {
+            color: #ccc;
+        }
+
+        body.dark-theme .tech-section code {
+            background: #2a2a2a;
+            color: #ff8aba;
+        }
+
+        body.dark-theme .callout {
+            background: #2a1a1f;
+            border-color: #4a2a3a;
+            color: #ffb3d9;
+        }
+
+        body.dark-theme .toc {
+            background: #1a1a1a;
+            border-color: #333;
+        }
+
+        body.dark-theme .toc a {
+            color: #ddd;
+        }
+
+        body.dark-theme .toc a:hover {
+            color: #ff8aba;
+        }
+
+        body.dark-theme .breadcrumbs {
+            color: #999;
+        }
+
+        body.dark-theme .breadcrumbs a {
+            color: #999;
+        }
+
+        body.dark-theme .breadcrumbs span {
+            color: #fff;
+        }
+
+        .kbd {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #333;
+        }
+
+        body.dark-theme .kbd {
+            background: #2a2a2a;
+            border-color: #444;
+            color: #ccc;
+        }
+
+        .footer {
+            background: #2c2c2c;
+            color: #fff;
+            padding: 25px 0 15px 0;
+            margin-top: 0;
+        }
+
+        .footer-content {
+            max-width: 1600px !important;
+            margin: 0 auto !important;
+            padding: 0 20px !important;
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .footer-main {
+            display: flex;
+            gap: 30px;
+            flex: 1;
+        }
+
+        .footer-logo {
+            flex-shrink: 0;
+            width: 200px;
+        }
+
+        .footer-logo img {
+            height: 40px;
+            width: auto;
+        }
+
+        .footer-logo p {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #ccc;
+            line-height: 1.3;
+        }
+
+        .footer-sections {
+            display: flex;
+            gap: 30px;
+            flex: 1;
+        }
+
+        .footer-right {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .footer-mascot {
+            flex-shrink: 0;
+        }
+
+        .footer-mascot img {
+            height: 180px;
+            width: auto;
+        }
+
+        .footer-section {
+            flex: 1;
+        }
+
+        .footer-section h3 {
+            font-size: 13px;
+            margin-bottom: 10px;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-section li {
+            margin-bottom: 6px;
+        }
+
+        .footer-section a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 11px;
+            transition: color 0.2s;
+        }
+
+        .footer-section a:hover {
+            color: #ff69b4;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #444;
+            margin-top: 20px;
+            padding-top: 15px;
+            text-align: center;
+            color: #999;
+            font-size: 10px;
+        }
+
+        @media (min-width: 1700px) {
+            .content-wrapper {
+                max-width: 1500px;
+            }
+            
+            .footer-content {
+                max-width: 1700px !important;
+            }
+        }
+        
+        @media (min-width: 2000px) {
+            .content-wrapper {
+                max-width: 1600px;
+            }
+            
+            .footer-content {
+                max-width: 1800px !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                padding: 10px;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .footer-sections {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .footer-section {
+                text-align: center;
+            }
+            
+            .footer-mascot img {
+                height: 120px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="../../youvi/sidebar.css">
+    <link rel="stylesheet" href="../../youvi/sidebar-scroll.css">
+    <link rel="stylesheet" href="../../youvi/themes/dark-theme.css">
+    <link rel="stylesheet" href="../../youvi/themes/skeuo-theme.css">
+    <link rel="stylesheet" href="../../youvi/themes/theme-dropdown.css">
+    <link rel="stylesheet" href="../../youvi/sticky-video.css">
+</head>
+<link rel="icon" href="../../favicon/youvi/favicon.ico" type="image/x-icon">
+<body>
+    <div class="top-nav">
+        <div class="top-nav-content">
+            <a href="../../youvi_main.html">Videos</a>
+            <a href="../../index.html">Management</a>
+            <a href="../../youvi_ch_list.html">Channels</a>
+            <a href="../../youvi_playlists_list.html">Playlists</a>
+            <a href="../../youvi_feed_all.html">Feed</a> 
+            <a href="../index.html" class="active">Wiki</a>
+        </div>
+    </div>
+
+  <header class="header">
+    <div class="header-content-wrapper">
+      <div class="header-left">
+        <button id="sidebarToggle" class="sidebar-toggle-btn" aria-label="Toggle sidebar">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+          </svg>
+        </button>
+        
+        <div class="logo">
+          <a href="../../youvi_main.html">
+            <img src="../../images/logo_youvi_ind.png" alt="Youvi logo">
+          </a>
+        </div>
+      </div>
+      
+      <div class="header-center">
+        <div class="search-area">
+          <input type="text" id="headerSearchInput" placeholder="Search videos..." class="search-input">
+          <button id="doSearch" class="search-btn">Search</button>
+        </div>
+      </div>
+      
+      <div class="header-right">
+        <div class="user-actions">
+          <div class="settings-container">
+            <a href="#" class="settings-btn">⚙</a>
+            <div class="theme-dropdown">
+              <button class="theme-dropdown-item" data-theme="light">Light</button>
+              <button class="theme-dropdown-item" data-theme="dark">Dark</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+ <!-- Main Container -->
+    <div class="container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Navigation</div>
+                <a href="../../youvi_main.html" class="sidebar-item nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9,22 9,12 15,12 15,22"/>
+                    </svg>
+                    <span>Home</span>
+                </a>
+                <a href="../../youvi_feed_all.html" class="sidebar-item nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5">
+                        <path d="M4 11a9 9 0 0 1 9 9"/>
+                        <path d="M4 4a16 16 0 0 1 16 16"/>
+                        <path d="M5 20a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                    </svg>
+                    <span>Feed</span>
+                </a>
+
+                <a href="../../youvi_tags.html" class="sidebar-item nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                        <line x1="7" y1="7" x2="7.01" y2="7"/>
+                    </svg>
+                    <span>All Tags</span>
+                </a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-title">Library</div>
+                <a href="../../youvi_history.html" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12,6 12,12 16,14"/>
+                    </svg>
+                    <span>History</span>
+                </a>
+                <a href="../../youvi_fav.html" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                    <span>Favorites</span>
+                </a>
+                <a href="../../youvi_playlists_list.html" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="8" y1="8" x2="16" y2="8"/>
+                        <line x1="8" y1="12" x2="16" y2="12"/>
+                        <line x1="8" y1="16" x2="16" y2="16"/>
+                        <circle cx="6" cy="8" r="1"/>
+                        <circle cx="6" cy="12" r="1"/>
+                        <circle cx="6" cy="16" r="1"/>
+                    </svg>
+                    <span>Playlists</span>
+                </a>
+                <a href="../../youvi_ch_list.html" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 1-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>Channels</span>
+                </a>
+                <a href="../../youvi_subscriptions.html" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5">
+                        <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
+                        <polyline points="17,2 12,7 7,2"/>
+                    </svg>
+                    <span>Subscriptions</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Wiki</div>
+                <a href="../index.html" class="sidebar-item library-item">Home</a>
+                <a href="../player.html" class="sidebar-item library-item ">Player</a>
+                <a href="../danmaku.html" class="sidebar-item library-item">Danmaku</a>
+                <a href="general.html" class="sidebar-item library-item">Search: Interface</a>
+                <a href="operators.html" class="sidebar-item library-item">Search: Operators</a>
+                <a href="../tags/general.html" class="sidebar-item library-item active">Tags: General</a>
+                <a href="../tags/allias.html" class="sidebar-item library-item ">Tags: Aliases</a>
+                <a href="../tags/implication.html" class="sidebar-item library-item">Tags: Implications</a>
+                <a href="../tags/rules.html" class="sidebar-item library-item">Tags: Tagging Rules</a>
+                <a href="../feed.html" class="sidebar-item library-item">Feed</a>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">About Site</div>
+                <a href="../about.html" class="sidebar-item library-item">About Site</a>
+                <a href="../tech.html" class="sidebar-item library-item">Technologies</a>
+                <a href="../docs.html" class="sidebar-item library-item">Documentation</a>
+            </div>
+           
+        </aside>
+<!-- Content Wrapper (centered) -->
+        <div class="content-wrapper">
+            <!-- Main Content -->
+            <main class="main-content">
+                <div class="breadcrumbs">
+                    <a href="../index.html">Wiki</a> › 
+                    <a href="#">Tags</a> › 
+                    <span>General About Tags</span>
+                </div>
+
+      <div class="page-header">
+        <div class="page-title">Youvi Tag System</div>
+        <div class="page-desc">Everything you need to know about tags for convenient video organization</div>
+      </div>
+
+      <div class="page-body">
+        <div class="tech-section">
+          <h2>Contents</h2>
+          <div class="toc">
+            <ul>
+              <li><a href="#tag-types">Tag Types</a></li>
+              <li><a href="#how-to-use">How to Use</a></li>
+              <li><a href="#video-page">Tagging video on video page</a></li>
+              <li><a href="#tag-page">Tags Page</a></li>
+              <li><a href="#search">Search by Tags</a></li>
+              <li><a href="#technical">Technical Information</a></li>
+            </ul>
+          </div>
+        </div>
+
+
+        <section class="tech-section" id="tag-types">
+          <h2>Tag Types</h2>
+          <p>Youvi uses a typed tag system. Each tag has a type, which is indicated in brackets after the name.</p>
+          
+          <h3>Main Types</h3>
+          <ul>
+            <li><span class="tag-example tag-ct">(ct) Category</span> — content category (Anime, Games, Music, etc.)</li>
+            <li><span class="tag-example tag-gt">(gt) General Tag</span> — general tags (Review, Let's Play, Tutorial)</li>
+            <li><span class="tag-example tag-at">(at) Anime Title</span> — anime title</li>
+            <li><span class="tag-example tag-nat">(nat) Animation Title</span> — animation title (non-anime)</li>
+            <li><span class="tag-example tag-ser">(ser) Serial Title</span> — series title</li>
+            <li><span class="tag-example tag-mt">(mt) Movie Title</span> — movie title</li>
+            <li><span class="tag-example tag-ch">(ch) Character</span> — character</li>
+            <li><span class="tag-example tag-ge">(ge) Genre</span> — genre</li>
+            <li><span class="tag-example tag-au">(au) Author / (ar) Artist</span> — author/creator</li>
+            <li><span class="tag-example tag-st">(st) Studio</span> — studio</li>
+            <li><span class="tag-example tag-yr">(yr) Year</span> — year</li>
+          </ul>
+
+          <div class="callout info">
+            <strong>Important:</strong> Each video must have at least 1 General tag (gt) — the main tag describing content, 1 Category tag (ct) and 1 Channel tag (ka) - channel tag.
+          </div>
+        </section>
+
+        <section class="tech-section" id="how-to-use">
+          <h2>How to Use Tags</h2>
+          
+          <h3>Adding Tags to Video</h3>
+          <ol>
+            <li>Open video page</li>
+            <li>Click "Edit" button under video (under channel avatar, name and Subscribe button, find button "Edit")</li>
+            <li>Enter tags separated by commas: <code>Anime (ct), Review (gt)</code> or by categories like on search - <code>category:anime, general:review</code> or <code>ct:anime, gt:review</code> (category only if tag alredy existing, to add new tag write tag (type) and after that you can add it via categories)</li>
+            <li>If tag already existing it will show this tag in autocomplete</li>
+            <li>Click "Save"</li>
+          </ol>
+
+          <h3>Autocomplete</h3>
+          <p>When entering tags, the system suggests existing tags from the database. This helps avoid duplicates and typos.</p>
+
+ <h3>Aliases</h3>  
+          <h3>Aliases</h3>
+          <p>You can enter tags in different ways, the system will find the correct variant:</p>
+          <ul>
+            <li><code>Windows</code> → <code>Windows (gt)</code></li>
+            <li><code>Винда</code> → <code>Windows (gt)</code></li>
+            <li><code>Win</code> → <code>Windows (gt)</code></li>
+          </ul>
+          <p>Read more about aliases in the <a href="allias.html">Aliases</a> section.</p>
+
+          <h3>Implications</h3>
+          <p>Some tags automatically add related tags. For example, if you add <code>Windows 7 (gt)</code>, <code>Windows (gt)</code> and <code>Microsoft (au)</code> will be automatically added.</p>
+          <p>Read more about implications in the <a href="implication.html">Implications</a> section.</p>
+        </section>
+
+        <section class="tech-section" id="tag-page">
+          <h2>Tags Page</h2>
+          <p>On the <a href="../../youvi_tags.html">All Tags</a> page you can see all tags in your collection, grouped by types.</p>
+          
+          <h3>Page Features</h3>
+          <ul>
+            <li><strong>View All Tags</strong> — tags are displayed with color coding by types</li>
+            <li><strong>Search</strong> — quickly find needed tag</li>
+            <li><strong>Usage Counter</strong> — shows how many videos have each tag</li>
+            <li><strong>Editing</strong> — configure aliases and implications for tags</li>
+          </ul>
+
+          <h3>Editing Tags</h3>
+          <p>Hover over a tag and click the pencil icon (✏️) to:</p>
+          <ul>
+            <li>Add aliases (alternative names)</li>
+            <li>Configure implications (automatic links)</li>
+            <li>Change canonical name</li>
+          </ul>
+        </section>
+
+        <section class="tech-section" id="search">
+          <h2>Search by Tags</h2>
+          <p>Use tags for quick video search in your collection.</p>
+          
+          <h3>Search on Main Page</h3>
+          <p>On Youvi's main page, enter tag name in search or click on a tag under any video — all videos with that tag will open.</p>
+
+          <h3>Filter by Multiple Tags</h3>
+          <p>You can combine tags for precise search. For example:</p>
+          <ul>
+            <li><code>Anime (ct)</code> + <code>Comedy (ge)</code> — all anime comedies</li>
+            <li><code>Games (ct)</code> + <code>Review (gt)</code> — all game reviews</li>
+          </ul>
+
+          <h3>Special Categories</h3>
+          <p>The site header has quick links to popular categories: Anime, Games, Series.</p>
+        </section>
+
+        <section class="tech-section" id="technical">
+          <h2>Technical Information</h2>
+          <p>For those interested in the technical side of the tag system.</p>
+          
+          <h3>Data Storage</h3>
+          <p>Tags are stored in two places:</p>
+          <ul>
+            <li><strong>Video Metadata</strong> — in files <code>.metadata/*.meta.json</code></li>
+            <li><strong>Tag Database</strong> — in file <code>.youvi/tag-database.json</code></li>
+          </ul>
+
+          <h3>Tag Format</h3>
+          <p>Each tag has structure:</p>
+          <code>Name (type)</code>
+          <p>For example: <code>Windows (gt)</code>, <code>NHK_ni_youkuso (at)</code>, <code>Comedy (ge)</code></p>
+
+          <h3>Normalization</h3>
+          <p>System automatically normalizes tags:</p>
+          <ul>
+            <li>Converts to lowercase for search</li>
+            <li>Removes extra spaces</li>
+            <li>Resolves aliases to canonical names</li>
+          </ul>
+
+          <h3>Performance</h3>
+          <p>Tag database is optimized for fast operation:</p>
+          <ul>
+            <li>Indexes for quick search</li>
+            <li>Result caching</li>
+            <li>Lazy loading when needed</li>
+          </ul>
+
+          <h3>API for Developers</h3>
+          <p>If you're developing extensions for Youvi, the following APIs are available:</p>
+          <ul>
+            <li><code>window.tagDatabaseManager</code> — tag database management</li>
+            <li><code>window.TagTypes</code> — working with tag types</li>
+            <li><code>window.tagImplicationResolver</code> — implication resolution</li>
+          </ul>
+        </section>
+
+
+                </div>
+            </main>
+        </div><!-- /content-wrapper -->
+    </div>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-main">
+        <div class="footer-logo">
+          <img src="../../images/logo_youvi_ind_ex.png" alt="Youvi" loading="lazy">
+          <p>Platform for watching video content. Save, categorize and watch videos.</p>
+        </div>
+        <div class="footer-sections">
+          <div class="footer-section">
+            <h3>Sections</h3>
+            <ul>
+              <li><a href="../../youvi_main.html">Videos</a></li>
+              <li><a href="../../youvi_tags.html">Tags</a></li>
+              <li><a href="../../youvi_feed_all.html">Feed</a></li>
+              <li><a href="../../index.html">Management</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h3>Library</h3>
+            <ul>
+              <li><a href="../../youvi_ch_list.html">Channels</a></li>
+              <li><a href="../../youvi_playlists_list.html">Playlists</a></li>
+              <li><a href="../../youvi_subscriptions.html">Subscribes</a></li>
+              <li><a href="../../youvi_fav.html">Favorites</a></li>
+              <li><a href="../../youvi_history.html">History</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h3>Wiki</h3>
+            <ul>
+              <li><a href="../../wiki/index.html">Main</a></li>
+              <li><a href="../../wiki/player.html">Player</a></li>
+              <li><a href="../../wiki/danmaku.html">Danmaku</a></li>
+              <li><a href="../../wiki/tags/general.html">Tags</a></li>
+              <li><a href="../../wiki/tags/rules.html">Tagging Rules</a></li>
+              <li><a href="../../wiki/search/general.html">Search</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h3>PGC</h3>
+            <ul>
+              <li><a href="../../youvi_main.html?tag=Anime (ct)">Anime</a></li>
+              <li><a href="../../youvi_main.html?tag=Animation (ct)">Animation</a></li>
+              <li><a href="../../youvi_main.html?tag=Movies (ct)">Movies</a></li>
+              <li><a href="../../youvi_main.html?tag=Series (ct)">Series</a></li>
+              <li><a href="../../youvi_main.html?tag=Music (ct)">Music</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h3>UGC</h3>
+            <ul>
+              <li><a href="../../youvi_main.html?tag=Games (ct)">Games</a></li>
+              <li><a href="../../youvi_main.html?tag=Technologies (ct)">Technologies</a></li>
+              <li><a href="../../youvi_main.html?tag=Entertainment (ct)">Entertainment</a></li>
+              <li><a href="../../youvi_main.html?tag=IRL (ct)">IRL</a></li>
+              <li><a href="../../youvi_main.html?tag=TV (ct)">TV</a></li>
+              <li><a href="../../youvi_main.html?tag=Education (ct)">Education</a></li>
+              <li><a href="../../youvi_main.html?tag=Other (ct)">Other</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h3>About Site</h3>
+            <ul>
+              <li><a href="../../wiki/about.html">About Site</a></li>
+               <li><a href="../../wiki/docs.html">Documentation</a></li>
+              <li><a href="../../wiki/tech.html">Technologies</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="footer-right">
+        <div class="footer-mascot">
+          <img src="../../images/mascot1.png" alt="Yuvi" loading="lazy">
+        </div>
+      </div>
+    </div>
+  </footer>
+
+    <script src="../../youvi/sidebar-scroll.js"></script>
+    <script src="../../youvi/themes/theme-toggle.js"></script>
+    <script>
+        try {
+            const toggle = document.getElementById('sidebarToggle');
+            const html = document.documentElement;
+            
+            const savedState = localStorage.getItem('sidebarCollapsed');
+            if (savedState === 'true') {
+                html.classList.add('sidebar-collapsed');
+            }
+            
+            if (toggle) {
+                toggle.addEventListener('click', () => {
+                    html.classList.toggle('sidebar-collapsed');
+                    localStorage.setItem('sidebarCollapsed', html.classList.contains('sidebar-collapsed'));
+                });
+            }
+        } catch(_) {}
+
+        try {
+            const input = document.querySelector('#headerSearchInput');
+            const btn = document.querySelector('#doSearch');
+            if (btn && input) {
+                const go = () => {
+                    const q = (input.value || '').trim();
+                    const url = q ? `../../youvi_search.html?q=${encodeURIComponent(q)}` : '../../youvi_search.html';
+                    location.href = url;
+                };
+                btn.addEventListener('click', go);
+                input.addEventListener('keyup', (e) => { if (e.key === 'Enter') go(); });
+            }
+        } catch(_) {}
+    </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+/* Danmaku Counter Styles */
+.video-danmaku {
+    font-size: 11px;
+    color: #666;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
+}
+.video-danmaku::before {
+    content: '💬';
+    font-size: 10px;
+}

@@ -1,0 +1,85 @@
+/**
+ * YouVi Pagination System
+ * Unified pagination styles for all pages
+ */
+
+/* Pagination Container */
+.pagination {
+    margin-top: auto; /* Push to bottom of flex container */
+    padding-top: 20px; /* Space above pagination */
+    padding-bottom: 20px; /* Space below pagination */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    color: #111;
+}
+
+/* Pagination Info Text */
+.pagination-info {
+    font-size: 12px;
+    color: #666;
+    margin-right: 10px;
+}
+
+/* Pagination Buttons */
+.pagination-btn {
+    min-width: 30px;
+    padding: 4px 8px;
+    margin: 1px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.1s;
+    background: #ff69b4;
+    color: white;
+    border: none;
+}
+
+.pagination-btn.active {
+    background: #d94b88;
+    color: #fff;
+    font-weight: bold;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    background: #e0e0e0;
+    color: #777;
+}
+
+/* Dark Theme Support */
+body.dark-theme .pagination {
+    color: #fff;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+body.dark-theme .pagination-info {
+    color: #ccc;
+}
+
+body.dark-theme .pagination-btn {
+    background: #ff69b4;
+    color: #fff;
+    border: none;
+}
+
+body.dark-theme .pagination-btn.active {
+    background: #d94b88;
+    color: #fff;
+    font-weight: bold;
+}
+
+body.dark-theme .pagination-btn:hover:not(:disabled) {
+    background: #d94b88;
+}
+
+body.dark-theme .pagination-btn:disabled {
+    background: #555;
+    color: #999;
+    opacity: 0.6;
+    cursor: not-allowed;
+}

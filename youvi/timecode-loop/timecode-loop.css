@@ -1,0 +1,67 @@
+/* Timecode Context Menu - Light Theme (default) */
+.timecode-context-menu {
+    position: fixed;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 4px;
+    min-width: 180px;
+    display: none;
+    z-index: 99999;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    pointer-events: auto;
+}
+
+.timecode-context-menu.show {
+    display: block !important;
+}
+
+.timecode-context-menu-item {
+    background: none;
+    border: none;
+    color: #333;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    display: block;
+    width: 100%;
+    text-align: left;
+    transition: all 0.2s;
+}
+
+.timecode-context-menu-item:hover {
+    background: #f0f0f0;
+    color: #000;
+}
+
+.timecode-context-menu-item.active {
+    background: #ff69b4;
+    color: #ffffff;
+}
+
+.timecode-context-menu-item:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Dark Theme */
+body.dark-theme .timecode-context-menu {
+    background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-theme .timecode-context-menu-item {
+    color: #cccccc;
+}
+
+body.dark-theme .timecode-context-menu-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+body.dark-theme .timecode-context-menu-item.active {
+    background: #ff69b4;
+    color: #ffffff;
+}

@@ -1,0 +1,2109 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n-title="searchPage.pageTitle">Поиск | Youvi</title>
+    <script>
+
+        (function() {
+            var theme = localStorage.getItem('youvi-theme');
+            var sidebar = localStorage.getItem('sidebarCollapsed');
+
+            var htmlClasses = [];
+            if (theme === 'dark') htmlClasses.push('dark-theme');
+            else if (theme === 'skeuo') htmlClasses.push('skeuo-theme');
+            if (sidebar === 'true') htmlClasses.push('sidebar-collapsed');
+            if (htmlClasses.length) document.documentElement.className = htmlClasses.join(' ');
+        })();
+    </script>
+    
+    <!-- Header styles -->
+    <link rel="stylesheet" href="youvi/header/youvi-header.css">
+    <!-- Sticky header + left sidebar filler/background for Youvi pages -->
+    <link rel="stylesheet" href="youvi/sticky-video.css">
+    
+    <!-- YouVi Hover Preview System -->
+    <script src="youvi/hover/hover-preview-queue.js"></script>
+    <script src="youvi/hover/hover-preview.js"></script>
+    <script src="youvi/hover/hover-init.js"></script>
+    <script src="youvi/hover/hover-bundle.js"></script>
+    
+    <!-- Search Logic -->
+    <script src="youvi/search/search-logic.js"></script>
+    
+    <!-- Danmaku Counter -->
+    <script src="youvi/danmaku-counter.js"></script>
+    <link rel="stylesheet" href="youvi/danmaku-counter.css">
+    
+    <!-- Video ID System -->
+    <script src="youvi/video-id.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #fff; 
+            color: #111; 
+            min-height: 100vh;
+        }
+
+        .top-nav { background: #d94b88; border-bottom: 1px solid #c2185b; padding: 4px 0; }
+        .top-nav a { color: #fff; text-decoration: none; font-size: 12px; padding: 2px 0; transition: color 0.2s; }
+        .top-nav a:hover { color: #ffd6ea; }
+        .top-nav a.active { color: #ffd6ea; font-weight: 600; }
+
+        .lang-switcher { margin-left: auto; }
+        .lang-select { background: transparent; border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 11px; cursor: pointer; outline: none; }
+        .lang-select:hover { border-color: rgba(255, 255, 255, 0.5); }
+        .lang-select option { background: #d94b88; color: #fff; }
+
+        .header { background: #FFE7F4; padding: 0; border-bottom: 1px solid #f2cfe1; min-height: 40px; width: 100%; }
+
+        .sidebar-toggle-btn { width: 30px; height: 30px; background: transparent; border: none; border-radius: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #111; transition: background-color 0.2s; margin-right: 10px; flex-shrink: 0; }
+        .sidebar-toggle-btn:hover { background: transparent; }
+        .sidebar-toggle-btn svg { width: 16px; height: 16px; fill: #111; }
+
+
+
+
+
+
+        .search-input { flex: 1; padding: 6px 10px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); font-size: 13px; min-width: 280px; height: 32px; }
+        .search-btn { padding: 6px 14px; background: #ff69b4; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; height: 32px; display: flex; align-items: center; transition: background-color 0.2s; }
+        .search-help-btn { padding: 6px 8px; background: #666; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; height: 32px; width: 32px; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s; margin-left: 4px; }
+        .search-help-btn:hover { background: #555; }
+
+        .search-input.boolean-search {
+            border-color: #ff69b4 !important;
+            box-shadow: 0 0 0 2px rgba(255,105,180,0.2) !important;
+        }
+        .search-input.exact-search {
+            border-color: #4CAF50 !important;
+            box-shadow: 0 0 0 2px rgba(76,175,80,0.2) !important;
+        }
+        .search-input.wildcard-search {
+            border-color: #FF9800 !important;
+            box-shadow: 0 0 0 2px rgba(255,152,0,0.2) !important;
+        }
+
+        .user-actions { display: flex; gap: 8px; align-items: center; margin-left: auto; flex-shrink: 0; }
+        .user-actions a { color: #111; text-decoration: none; font-size: 13px; transition: color 0.2s; }
+        .user-actions a:hover { color: #ff69b4; }
+
+        .container { display: flex; width: 100%; margin: 0; gap: 20px; padding: 0 20px 0 20px; min-height: calc(100vh - 180px); }
+        
+        .content-wrapper { display: flex; flex: 1; max-width: 1400px; margin: 0 auto; gap: 20px; }
+
+        .main-content { flex: 1; display: flex; flex-direction: column; padding-bottom: 40px; }
+        
+        .header-content-wrapper,
+        .top-nav-content {
+            max-width: none !important;
+            margin: 0 !important;
+        }
+        
+        
+        .sidebar {
+            min-height: 100%;
+            flex-shrink: 0;
+            width: 200px;
+            transition: width 0.3s ease;
+        }
+        
+        .sidebar-collapsed .sidebar,
+        html.sidebar-collapsed .sidebar {
+            width: 60px !important;
+            padding: 10px 8px !important;
+            display: block !important; 
+            position: sticky !important;
+            top: 40px !important; 
+            max-height: calc(var(--sidebar-max-height, 100vh) - 75px) !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+        }
+
+        .sidebar-collapsed .sidebar-title,
+        html.sidebar-collapsed .sidebar-title {
+            display: none !important;
+        }
+
+        .sidebar-collapsed .sidebar-item,
+        html.sidebar-collapsed .sidebar-item {
+            padding: 8px !important;
+            padding-left: 5px !important;
+            padding-right: 8px !important;
+            justify-content: center !important;
+            border-left: 3px solid transparent !important;
+            border-radius: 4px;
+            font-size: 0 !important;
+        }
+
+        .sidebar-collapsed .sidebar-item:hover,
+        html.sidebar-collapsed .sidebar-item:hover {
+            background: rgba(255, 105, 180, 0.1);
+        }
+
+        .sidebar-collapsed .sidebar-item.active,
+        html.sidebar-collapsed .sidebar-item.active {
+            background: rgba(255, 105, 180, 0.15);
+        }
+
+        .sidebar-collapsed .sidebar-item svg,
+        .sidebar-collapsed .sidebar-item img,
+        html.sidebar-collapsed .sidebar-item svg,
+        html.sidebar-collapsed .sidebar-item img {
+            margin: 0 !important;
+            width: 20px !important;
+            height: 20px !important;
+            font-size: 16px !important;
+        }
+
+        .sidebar-collapsed #subscribedChannelsContainer .sidebar-item,
+        html.sidebar-collapsed #subscribedChannelsContainer .sidebar-item {
+            justify-content: center !important;
+        }
+
+        .sidebar-collapsed #subscribedChannelsContainer .sidebar-item span,
+        html.sidebar-collapsed #subscribedChannelsContainer .sidebar-item span {
+            display: none !important;
+        }
+
+        .sidebar-collapsed #subscribedChannelsContainer .sidebar-item div,
+        html.sidebar-collapsed #subscribedChannelsContainer .sidebar-item div {
+            margin: 0 !important;
+        }
+
+        .sidebar-collapsed .library-item,
+        .sidebar-collapsed .nav-item,
+        html.sidebar-collapsed .library-item,
+        html.sidebar-collapsed .nav-item {
+            justify-content: center !important;
+            gap: 0 !important;
+        }
+
+        .sidebar-collapsed .library-item span,
+        .sidebar-collapsed .nav-item span,
+        html.sidebar-collapsed .library-item span,
+        html.sidebar-collapsed .nav-item span {
+            display: none !important;
+        }
+
+        .sidebar-collapsed .library-item svg,
+        .sidebar-collapsed .nav-item svg,
+        html.sidebar-collapsed .library-item svg,
+        html.sidebar-collapsed .nav-item svg {
+            margin: 0 !important;
+        }
+        
+        .sidebar-collapsed .container,
+        html.sidebar-collapsed .container {
+            padding-left: 20px;
+        }
+        
+        .sidebar-collapsed .main-content,
+        html.sidebar-collapsed .main-content {
+            margin-left: 0;
+        }
+        
+        .sidebar-collapsed .content-wrapper,
+        html.sidebar-collapsed .content-wrapper {
+            max-width: 1500px;
+        }
+
+        .results-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; gap: 10px; }
+        .results-title { font-size: 20px; margin: 10px 0 8px 0; color: #111; }
+        .empty-state { text-align: center; color: #666; padding: 40px 20px; font-size: 14px; }
+        .view-switcher { display:flex; align-items:center; gap:6px; }
+        .view-btn { padding:4px 8px; font-size:11px; border:1px solid #eee; background:#fff; color:#333; border-radius:4px; cursor:pointer; }
+        .view-btn.active { background:#ff69b4; color:#fff; border-color:#ff69b4; }
+        .type-switcher { display:flex; align-items:center; gap:6px; }
+        .type-btn { padding:4px 8px; font-size:11px; border:1px solid #eee; background:#fff; color:#333; border-radius:4px; cursor:pointer; }
+        .type-btn.active { background:#ff69b4; color:#fff; border-color:#ff69b4; }
+
+        .playlist-thumbnail { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; aspect-ratio:16/9; background:#eee; position:relative; overflow:hidden; border-radius:6px; width:100%; height:100%; }
+        .playlist-thumb { background:#eee; display:flex; align-items:center; justify-content:center; color:#666; font-size:10px; position:relative; overflow:hidden; }
+        .playlist-count-badge { position:absolute; bottom:5px; right:5px; background:rgba(0,0,0,0.8); color:#fff; font-size:11px; padding:2px 4px; border-radius:2px; z-index:2; }
+
+        .channels-grid { display:grid; grid-template-columns: repeat(6, 1fr); gap: 15px; padding: 0 20px 0 20px; }
+        .channel-card { display:flex; flex-direction:column; align-items:center; text-align:center; background:#fff; border-radius:8px; overflow:hidden; border:1px solid #eee; cursor:pointer; padding:10px; }
+        .channel-avatar { width:80px; height:80px; margin-bottom:8px; background:#ff69b4; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:bold; color:#fff; border:2px solid #f0f0f0; background-size:cover; background-position:center; background-repeat:no-repeat; }
+        .channel-info { width:100%; text-align:center; }
+        .channel-name { font-size:12px; font-weight:600; margin-bottom:6px; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-clamp:2; color:#111; }
+        .channel-name a { color:#ff69b4; text-decoration:none; }
+        .channel-name a:hover { text-decoration:underline; }
+        .channel-stats { display:flex; flex-direction:column; gap:2px; font-size:10px; color:#666; line-height:1.2; }
+        .subscribe-toggle-btn { margin-top:8px; padding:3px 8px; font-size:11px; border:none; border-radius:4px; background:#ff69b4; color:#fff; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; justify-content:center; min-width:100px; height:24px; }
+        .subscribe-toggle-btn.subscribed { background:#666; color:#fff; }
+        .channels-list { display:flex; flex-direction:column; gap:8px; padding: 0 20px 0 20px; }
+        .channels-list .channel-row { display:flex; gap:10px; align-items:center; padding:8px; border:1px solid #eee; border-radius:6px; background:#fff; cursor:pointer; }
+        .channels-list .channel-avatar { width:48px; height:48px; font-size:18px; margin:0; }
+        .channels-compact { display:flex; flex-direction:column; gap:6px; padding: 0 20px 0 20px; }
+        .channels-compact .channel-row { display:flex; gap:8px; align-items:center; padding:6px; border:1px solid #eee; border-radius:6px; background:#fff; cursor:pointer; }
+        .channels-compact .channel-avatar { width:36px; height:36px; font-size:16px; margin:0; }
+
+        .badges-hidden .video-quality,
+        .badges-hidden .video-new { display:none !important; }
+
+        .latest-grid { 
+            display: grid; 
+            grid-template-columns: repeat(6, 1fr); 
+            gap: 10px; 
+            padding: 0 20px 0 20px; 
+            align-content: start; 
+            justify-content: start; 
+            max-width: 100%; 
+            overflow: hidden; 
+        }
+        .video-card { position: relative; cursor: pointer; width: 100%; min-width: 0; overflow: hidden; contain: layout; }
+        .video-thumbnail { width: 100%; height: auto; background: #eee; border-radius: 6px; position: relative; overflow: hidden; margin-bottom: 4px; display: block; aspect-ratio: 16/9; object-fit: cover; }
+        .video-duration { position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.8); padding: 2px 4px; border-radius: 2px; font-size: 11px; color: #fff; z-index: 2; }
+        .video-quality { position: absolute; top: 5px; left: 5px; padding: 2px 4px; border-radius: 2px; font-size: 10px; color: #fff; z-index: 3; font-weight: bold; }
+        .video-quality[data-quality="4K"] { background: rgba(156,39,176,0.8); }
+        .video-quality[data-quality="1080p"] { background: rgba(255,105,180,0.8); }
+        .video-quality[data-quality="720p"] { background: rgba(76,175,80,0.8); }
+        .video-quality[data-quality="480p"] { background: rgba(255,152,0,0.8); }
+        .video-quality[data-quality="SD"] { background: rgba(102,102,102,0.8); }
+        .video-new { position: absolute; top: 5px; right: 5px; background: #ff4444; padding: 2px 6px; border-radius: 2px; font-size: 10px; color: #fff; z-index: 3; font-weight: bold; text-transform: uppercase; }
+        .video-info { padding: 0 5px; width: 100%; min-width: 0; overflow-wrap: break-word; word-break: break-word; }
+        .video-card-title { font-size: 12px; margin-bottom: 2px; color: #111; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-clamp: 2; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto; }
+        .video-views { font-size: 10px; color: #666; margin-top: 1px; display: flex; align-items: center; gap: 4px; }
+        .video-views::before { content: '👁'; font-size: 10px; }
+
+        .results-list { display:flex; flex-direction:column; gap:8px; padding: 0 20px 0 20px; }
+        .results-list .video-card { display:flex; gap:10px; align-items:flex-start; }
+        .results-list .video-card { align-items:stretch; }
+        .results-list .video-thumbnail { flex: 0 0 280px; height: 158px; aspect-ratio:auto; border-radius:6px; }
+        .results-list .video-info { padding:0 0 0 4px; display:flex; flex-direction:column; gap:6px; overflow:hidden; min-width:0; }
+        .results-list .video-card-title { font-size:18px; -webkit-line-clamp: 2; line-clamp: 2; }
+        .results-list .video-desc { font-size:13px; display:-webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow:hidden; line-clamp: 2; }
+        .results-list .video-meta-line, .results-list .video-views-line, .results-list .video-likes-line, .results-list .video-dates-line { font-size:13px; }
+        .results-list .video-views { font-size:12px; }
+        .results-list .playlist-channel { font-size:13px; }
+        .results-list .video-channel-row { gap:10px; }
+        .results-list .video-channel-row .channel-avatar-mini { width:20px; height:20px; font-size:12px; }
+        .results-list .video-channel-row .playlist-channel-link { font-size:14px; }
+
+        .results-compact { display:flex; flex-direction:column; gap:6px; padding: 0 20px 0 20px; }
+        .results-compact .video-card { display:flex; gap:6px; align-items:center; }
+        .results-compact .video-card { align-items:stretch; gap:5px; }
+        .results-compact .video-thumbnail { flex: 0 0 170px; height: 96px; aspect-ratio:auto; border-radius:6px; }
+        .results-compact .video-info { padding:0 0 0 3px; display:flex; flex-direction:column; gap:3px; overflow:hidden; min-width:0; }
+
+        @media (max-width: 1024px) {
+            .latest-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .latest-grid { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+        }
+        .results-compact .video-card-title { font-size:13px; -webkit-line-clamp: 2; line-clamp: 2; }
+        .results-compact .video-desc { font-size:11px; display:-webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow:hidden; line-clamp: 1; }
+        .results-compact .video-meta-line, .results-compact .video-views-line, .results-compact .video-likes-line, .results-compact .video-dates-line { font-size:11px; }
+        .results-compact .video-views { font-size:10px; }
+        .results-compact .playlist-channel { font-size:11px; }
+        .results-compact .video-channel-row { gap:8px; }
+        .results-compact .video-channel-row .channel-avatar-mini { width:18px; height:18px; font-size:11px; }
+        .results-compact .video-channel-row .playlist-channel-link { font-size:12px; }
+
+
+
+        .video-meta-line { font-size: 10px; color:#666; margin-top: 2px; display:flex; gap:8px; flex-wrap:wrap; }
+        .video-views-line { font-size: 10px; color:#666; margin-top: 2px; }
+        .video-likes-line { font-size: 10px; color:#666; margin-top: 2px; }
+        .video-dates-line { font-size: 10px; color:#777; margin-top: 2px; display:flex; gap:8px; flex-wrap:wrap; }
+        .video-desc { font-size: 11px; color:#444; margin-top: 2px; }
+        .video-channel-row { display:flex; align-items:center; gap:6px; margin-top: 4px; }
+        .channel-avatar-mini { width:16px; height:16px; background:#ff69b4; color:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; border-radius:4px; background-size:cover; background-position:center; background-repeat:no-repeat; flex-shrink:0; }
+        .video-channel-row .playlist-channel-link { font-size: 10px; }
+
+        .footer { background: #2c2c2c; color: #fff; padding: 25px 0 15px 0; margin-top: 0; }
+        .footer-content { max-width: 1600px; margin: 0 auto; padding: 0 20px; display: flex; gap: 30px; align-items: flex-start; }
+        .footer-logo { flex-shrink: 0; width: 200px; }
+        .footer-logo img { height: 40px; width: auto; }
+        .footer-logo p { margin-top: 8px; font-size: 11px; color: #ccc; line-height: 1.3; }
+        .footer-sections { display: flex; gap: 30px; flex: 1; }
+        .footer-main { display: flex; gap: 30px; flex: 1; }
+        .footer-right { display: flex; gap: 20px; align-items: flex-start; }
+        .footer-mascot { flex-shrink: 0; }
+        .footer-mascot img { height: 180px; width: auto; }
+        .footer-section { flex: 1; }
+        .footer-section h3 { font-size: 13px; margin-bottom: 10px; color: #fff; font-weight: 600; }
+        .footer-section ul { list-style: none; padding: 0; margin: 0; }
+        .footer-section li { margin-bottom: 6px; }
+        .footer-section a { color: #ccc; text-decoration: none; font-size: 11px; transition: color 0.2s; }
+        .footer-section a:hover { color: #ff69b4; }
+        .footer-bottom { border-top: 1px solid #444; margin-top: 20px; padding-top: 15px; text-align: center; color: #999; font-size: 10px; }
+        
+        @media (max-width: 768px) {
+            .footer-content { flex-direction: column; gap: 20px; }
+            .footer-sections { flex-direction: column; gap: 15px; }
+            .footer-section { text-align: center; }
+        }
+        
+        @media (max-width: 480px) {
+            .footer-content { flex-direction: column; gap: 30px; }
+            .footer-sections { flex-direction: column; gap: 20px; }
+            .footer-main { flex-direction: column; gap: 20px; }
+            .footer-right { width: 100%; flex-direction: column; align-items: center; gap: 15px; margin-top: 15px; }
+            .footer-mascot img { height: 120px; }
+            .footer-section { text-align: center; }
+        }
+
+        @media (min-width: 1700px) {
+            .content-wrapper {
+                max-width: 1500px;
+            }
+        }
+
+        @media (min-width: 2000px) {
+            .content-wrapper {
+                max-width: 1600px;
+            }
+        }
+
+        @media (max-width: 768px) { .container { flex-direction: column; padding: 10px; } .nav-links { display: none; } .search-input { width: 180px; } }
+        @media (max-width: 480px) { .search-input { width: 140px; } }
+        
+        body.dark-theme .header .search-area .search-input {
+            background: #4a3a34 !important;
+            border: 1px solid #555 !important;
+            color: #fff !important;
+        }
+        body.dark-theme .header .search-area .search-input:focus {
+            background: #544339 !important;
+            border-color: #ff69b4 !important;
+            box-shadow: 0 0 0 2px rgba(255,105,180,0.2) !important;
+        }
+        body.dark-theme .header .search-area .search-input::placeholder { color: #c8b9b4; }
+        
+        body.dark-theme #subscribedChannelsContainer .sidebar-item span {
+            color: #ccc !important; 
+        }
+
+        .search-help-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .search-help-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .search-help-close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            right: 15px;
+            top: 10px;
+        }
+        .search-help-close:hover { color: #000; }
+        .search-help-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #111;
+        }
+        .search-help-section {
+            margin-bottom: 20px;
+        }
+        .search-help-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .search-help-examples {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 5px 0;
+        }
+        .search-help-description {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        body.dark-theme .search-help-content {
+            background-color: #2c2c2c;
+            color: #fff;
+        }
+        body.dark-theme .search-help-title {
+            color: #fff;
+        }
+        body.dark-theme .search-help-section h3 {
+            color: #ccc;
+        }
+        body.dark-theme .search-help-examples {
+            background: #3a3a3a;
+            color: #fff;
+        }
+        body.dark-theme .search-help-description {
+            color: #aaa;
+        }
+        body.dark-theme .search-help-close:hover {
+            color: #fff;
+        }
+
+        .sorting-panel {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin: 10px 20px;
+            overflow: hidden;
+        }
+        
+        .sorting-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .sorting-header:hover {
+            background: #f0f0f0;
+        }
+        
+        .sorting-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .sorting-title svg {
+            width: 14px;
+            height: 14px;
+            stroke: #666;
+        }
+        
+        .sorting-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .sorting-toggle:hover {
+            background: #e0e0e0;
+        }
+        
+        .sorting-toggle svg {
+            width: 14px;
+            height: 14px;
+            stroke: #666;
+            transition: transform 0.2s;
+        }
+        
+        .sorting-panel.collapsed .sorting-toggle svg {
+            transform: rotate(-90deg);
+        }
+        
+        .sorting-content {
+            padding: 12px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            max-height: 1000px;
+        }
+        
+        .sorting-panel.collapsed .sorting-content {
+            max-height: 0;
+            padding: 0 12px;
+        }
+        
+        .sorting-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+        
+        .sorting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .sorting-group-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+        
+        .sorting-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        
+        .sorting-option {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        
+        .sorting-option:hover {
+            background: #e9ecef;
+            border-color: #ccc;
+        }
+        
+        .sorting-option.active {
+            background: #ff69b4;
+            border-color: #ff69b4;
+            color: #fff;
+        }
+        
+        .sorting-option.active svg {
+            stroke: #fff;
+        }
+        
+        .sorting-option svg {
+            width: 12px;
+            height: 12px;
+            stroke: #666;
+            flex-shrink: 0;
+        }
+        
+        .clear-filters {
+            color: #ff4444 !important;
+            border-color: #ff4444 !important;
+        }
+        
+        .clear-filters:hover {
+            background: #ffe6e6 !important;
+            border-color: #ff6666 !important;
+        }
+        
+        .clear-filters svg {
+            stroke: #ff4444;
+        }
+
+        .quality-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: 700;
+            color: #fff;
+            min-width: 24px;
+            text-align: center;
+        }
+        .quality-4k { background: #9c27b0; }
+        .quality-1080p { background: #ff69b4; }
+        .quality-720p { background: #4caf50; }
+        .quality-480p { background: #ff9800; }
+        .quality-sd { background: #666; }
+
+        body.dark-theme .sorting-panel {
+            background: #2c2c2c;
+            border-color: #444;
+        }
+        
+        body.dark-theme .sorting-header {
+            background: #3a3a3a;
+            border-color: #444;
+        }
+        
+        body.dark-theme .sorting-header:hover {
+            background: #404040;
+        }
+        
+        body.dark-theme .sorting-title {
+            color: #fff;
+        }
+        
+        body.dark-theme .sorting-title svg {
+            stroke: #ccc;
+        }
+        
+        body.dark-theme .sorting-toggle svg {
+            stroke: #ccc;
+        }
+        
+        body.dark-theme .sorting-toggle:hover {
+            background: #4a4a4a;
+        }
+        
+        body.dark-theme .sorting-group-title {
+            color: #aaa;
+        }
+        
+        body.dark-theme .sorting-option {
+            background: #3a3a3a;
+            border-color: #444;
+            color: #fff;
+        }
+        
+        body.dark-theme .sorting-option:hover {
+            background: #404040;
+            border-color: #555;
+        }
+        
+        body.dark-theme .sorting-option.active {
+            background: #ff69b4;
+            border-color: #ff69b4;
+            color: #fff;
+        }
+        
+        body.dark-theme .sorting-option svg {
+            stroke: #ccc;
+        }
+        
+        body.dark-theme .clear-filters:hover {
+            background: #4a1a1a !important;
+            border-color: #ff6666 !important;
+        }
+        
+        body.dark-theme .video-quality[data-quality="4K"] { background: rgba(156,39,176,0.9); }
+        body.dark-theme .video-quality[data-quality="1080p"] { background: rgba(255,105,180,0.9); }
+        body.dark-theme .video-quality[data-quality="720p"] { background: rgba(76,175,80,0.9); }
+        body.dark-theme .video-quality[data-quality="480p"] { background: rgba(255,152,0,0.9); }
+        body.dark-theme .video-quality[data-quality="SD"] { background: rgba(102,102,102,0.9); }
+
+    </style>
+    <link rel="stylesheet" href="youvi/sidebar.css">
+    <link rel="stylesheet" href="youvi/sidebar-scroll.css">
+    <link rel="stylesheet" href="youvi/pagination.css">
+    
+    <!-- Theme System -->
+    <link rel="stylesheet" href="youvi/themes/dark-theme.css">
+    <link rel="stylesheet" href="youvi/themes/theme-dropdown.css">
+    
+    <!-- Autocomplete Module -->
+    <link rel="stylesheet" href="youvi/autocomplete/autocomplete.css">
+    <script src="youvi/autocomplete-data-loader.js"></script>
+    <script src="youvi/autocomplete/autocomplete-cache.js"></script>
+    <script src="youvi/autocomplete/autocomplete.js"></script>
+    <script src="youvi/autocomplete/autocomplete-integration.js"></script>
+    
+    <link rel="icon" href="favicon/youvi/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <div class="top-nav">
+      <div class="top-nav-content">
+      <a href="youvi_main.html" class="active" data-i18n="nav.video">Видео</a>
+      <a href="index.html" data-i18n="nav.management">Управление</a>
+      <a href="youvi_ch_list.html" data-i18n="nav.channels">Каналы</a>
+      <a href="youvi_playlists_list.html" data-i18n="nav.playlists">Плейлисты</a>
+      <a href="youvi_feed_all.html" data-i18n="nav.feed">Feed</a> 
+      <a href="wiki/index.html" data-i18n="nav.wiki">Wiki</a>
+      <div class="lang-switcher">
+        <select id="langSwitcher" class="lang-select">
+          <option value="ru">🇷🇺 RU</option>
+          <option value="en">🇬🇧 EN</option>
+          <option value="uk">🇺🇦 UK</option>
+        </select>
+      </div>
+      </div>
+    </div>
+
+  <!-- Header -->
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content-wrapper">
+      <div class="header-left">
+        <button id="sidebarToggle" class="sidebar-toggle-btn" aria-label="Toggle sidebar">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+          </svg>
+        </button>
+        
+        <div class="logo">
+          <a href="youvi_main.html">
+            <img src="images/logo_youvi_ind.png" alt="Youvi logo">
+          </a>
+        </div>
+      </div>
+      
+      <div class="header-center">
+        <div class="search-area autocomplete-wrapper">
+          <input type="text" id="headerSearchInput" placeholder="Поиск видео..." class="search-input" data-i18n-placeholder="search.placeholder">
+          <button id="headerSearchBtn" class="search-btn" data-i18n="search.button">Найти</button>
+          <button id="searchHelpBtn" class="search-help-btn" title="Справка по поиску" data-i18n-title="searchPage.helpTitle">?</button>
+        </div>
+      </div>
+      
+      <div class="header-right">
+        <div class="user-actions">
+          <a href="#" id="badgesToggle" data-i18n="user.settings">Настройки</a>
+          <a href="#" id="forceRefreshBtn" title="Очистить кэш и пересканировать все видео" data-i18n="header.scan" data-i18n-title="header.scanTitle">Скан</a>
+          <div class="settings-container">
+            <a href="#" class="settings-btn">⚙</a>
+            <div class="theme-dropdown">
+              <button class="theme-dropdown-item" data-theme="light" data-i18n="themes.light">Белая</button>
+              <button class="theme-dropdown-item" data-theme="dark" data-i18n="themes.dark">Черная</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title" data-i18n="sidebar.navigation">Навигация</div>
+                <a href="youvi_main.html" class="sidebar-item nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+                    <span data-i18n="sidebar.home">Главная</span>
+                </a>
+                <a href="youvi_feed_all.html" class="sidebar-item nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><path d="M5 20a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
+                    <span data-i18n="sidebar.feed">Feed</span>
+                </a>
+                <a href="youvi_tags.html" class="sidebar-item nav-item">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#ff69b4" stroke-width="1.5">
+                     <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                  <line x1="7" y1="7" x2="7.01" y2="7"/>
+                 </svg>
+                    <span data-i18n="sidebar.allTags">Все теги</span>
+                </a>
+
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-title" data-i18n="sidebar.library">Библиотека</div>
+                <a href="youvi_history.html" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                    <span data-i18n="sidebar.history">История</span>
+                </a>
+                <a href="youvi_fav.html" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    <span data-i18n="sidebar.favorites">Избранное</span>
+                </a>
+                <a href="youvi_playlists_list.html" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="16" y2="16"/><circle cx="6" cy="8" r="1"/><circle cx="6" cy="12" r="1"/><circle cx="6" cy="16" r="1"/></svg>
+                    <span data-i18n="sidebar.playlists">Плейлисты</span>
+                </a>
+                <a href="youvi_ch_list.html" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 1-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span data-i18n="sidebar.channels">Каналы</span>
+                </a>
+                <a href="youvi_subscriptions.html" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5">
+                        <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
+                        <polyline points="17,2 12,7 7,2"/>
+                    </svg>
+                    <span data-i18n="sidebar.subscriptions">Подписки</span>
+                </a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-title" data-i18n="sidebar.subscriptions">Подписки</div>
+                <div id="subscribedChannelsContainer"></div>
+            </div>
+
+             <div class="sidebar-section">
+                <div class="sidebar-title">PGC</div>
+                <a href="youvi_main.html?tag=Anime (ct)" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5"><path d="M12 2l2.5 7.5H22l-6 4.5 2.5 7.5L12 17l-6.5 4.5L8 14 2 9.5h7.5z"/></svg>
+                    <span data-i18n="footer.categories.anime">Anime</span>
+                </a>
+                <a href="youvi_main.html?tag=Animation (ct)" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                    <span data-i18n="footer.categories.animation">Animation</span>
+                </a>
+                <a href="youvi_main.html?tag=Movies (ct)" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+                    <span data-i18n="footer.categories.movies">Movies</span>
+                </a>
+                <a href="youvi_main.html?tag=Series (ct)" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5"><rect x="2" y="4" width="20" height="4" rx="1"/><rect x="2" y="10" width="20" height="4" rx="1"/><rect x="2" y="16" width="20" height="4" rx="1"/></svg>
+                    <span data-i18n="footer.categories.series">Series</span>
+                </a>
+                <a href="youvi_main.html?tag=Music (ct)" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                    <span data-i18n="footer.categories.music">Music</span>
+                </a>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">UGC</div>
+                <a href="youvi_main.html?tag=Games (ct)" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5"><line x1="6" y1="2" x2="6" y2="6"/><line x1="18" y1="2" x2="18" y2="6"/><line x1="6" y1="18" x2="6" y2="22"/><line x1="18" y1="18" x2="18" y2="22"/><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="10" r="1"/><circle cx="16" cy="14" r="1"/></svg>
+                    <span data-i18n="footer.categories.games">Games</span>
+                </a>
+                <a href="youvi_main.html?tag=Technology (ct)" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    <span data-i18n="footer.categories.tech">Technology</span>
+                </a>
+                <a href="youvi_main.html?tag=Entertainment (ct)" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                    <span data-i18n="footer.categories.entertainment">Entertainment</span>
+                </a>
+                <a href="youvi_main.html?tag=IRL (ct)" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span data-i18n="footer.categories.irl">IRL</span>
+                </a>
+                <a href="youvi_main.html?tag=TV (ct)" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"/><polyline points="17,2 12,7 7,2"/><text x="12" y="17" text-anchor="middle" font-size="8" fill="#666" font-weight="bold" stroke="none">TV</text></svg>
+                    <span data-i18n="footer.categories.tv">TV</span>
+                </a>
+                <a href="youvi_main.html?tag=Education (ct)" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    <span data-i18n="footer.categories.education">Education</span>
+                </a>
+                <a href="youvi_main.html?tag=Other (ct)" class="sidebar-item library-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="1.5"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+                    <span data-i18n="footer.categories.other">Other</span>
+                </a>
+            </div>
+        </aside>
+
+        <div class="content-wrapper">
+        <main class="main-content">
+            <div class="results-header">
+                <h2 class="results-title" id="resultsTitle" data-i18n="searchPage.search">Поиск</h2>
+                <div class="type-switcher">
+                    <button class="type-btn" data-type="videos" id="typeBtnVideos" data-i18n="searchPage.videos">Видео</button>
+                    <button class="type-btn" data-type="playlists" id="typeBtnPlaylists" data-i18n="searchPage.playlists">Плейлисты</button>
+                    <button class="type-btn" data-type="channels" id="typeBtnChannels" data-i18n="searchPage.channels">Каналы</button>
+                </div>
+                <div class="view-switcher">
+                    <button class="view-btn" data-view="grid" id="viewBtnGrid" data-i18n="searchPage.grid">Сетка</button>
+                    <button class="view-btn" data-view="list" id="viewBtnList" data-i18n="searchPage.list">Список</button>
+                    <button class="view-btn" data-view="compact" id="viewBtnCompact" data-i18n="searchPage.compact">Компактно</button>
+                </div>
+            </div>
+
+            <!-- Collapsible Sorting Panel -->
+            <div class="sorting-panel">
+                <div class="sorting-header" id="sortingHeader">
+                    <div class="sorting-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M3 12h18M3 18h18"/>
+                        </svg>
+                        <span data-i18n="searchPage.sortingAndFilters">Сортировка и фильтры</span>
+                    </div>
+                    <button class="sorting-toggle" id="sortingToggle">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="sorting-content" id="sortingContent">
+                    <div class="sorting-grid">
+                        <!-- Сортировка по времени -->
+                        <div class="sorting-group">
+                            <div class="sorting-group-title" data-i18n="searchPage.byTime">По времени</div>
+                            <div class="sorting-options">
+                                <button class="sorting-option sort-item" data-sort="newest">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                    <span data-i18n="searchPage.newest">Новые</span>
+                                </button>
+                                <button class="sorting-option sort-item" data-sort="oldest">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l-3.09 6.26L2 9.27l5 4.87-1.18 6.88L12 17.77l6.18 3.25L17 14.14l5-4.87-6.91-1.01L12 2z"/></svg>
+                                    <span data-i18n="searchPage.oldest">Старые</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Сортировка по популярности -->
+                        <div class="sorting-group">
+                            <div class="sorting-group-title" data-i18n="searchPage.byPopularity">По популярности</div>
+                            <div class="sorting-options">
+                                <button class="sorting-option sort-item" data-sort="popular">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 4 4 6.5 4c1.74 0 3.41 1.01 4.22 2.5C11.09 5.01 12.76 4 14.5 4 17 4 19 6 19 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                    <span data-i18n="searchPage.popular">Популярные</span>
+                                </button>
+                                <button class="sorting-option sort-item" data-sort="danmaku">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+                                    <span data-i18n="searchPage.byDanmaku">По данмаку</span>
+                                </button>
+                                <button class="sorting-option sort-item" data-sort="alphabetical">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                                    <span data-i18n="searchPage.alphabetical">По алфавиту</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Фильтр по качеству -->
+                        <div class="sorting-group">
+                            <div class="sorting-group-title" data-i18n="searchPage.byQuality">По качеству</div>
+                            <div class="sorting-options">
+                                <button class="sorting-option filter-item" data-filter="quality" data-value="4K">
+                                    <span class="quality-badge quality-4k">4K</span>
+                                    4K
+                                </button>
+                                <button class="sorting-option filter-item" data-filter="quality" data-value="1080p">
+                                    <span class="quality-badge quality-1080p">1080p</span>
+                                    1080p
+                                </button>
+                                <button class="sorting-option filter-item" data-filter="quality" data-value="720p">
+                                    <span class="quality-badge quality-720p">720p</span>
+                                    720p
+                                </button>
+                                <button class="sorting-option filter-item" data-filter="quality" data-value="480p">
+                                    <span class="quality-badge quality-480p">480p</span>
+                                    480p
+                                </button>
+                                <button class="sorting-option filter-item" data-filter="quality" data-value="SD">
+                                    <span class="quality-badge quality-sd">SD</span>
+                                    SD
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Фильтр по длительности -->
+                        <div class="sorting-group">
+                            <div class="sorting-group-title" data-i18n="searchPage.byDuration">По длительности</div>
+                            <div class="sorting-options">
+                                <button class="sorting-option filter-item" data-filter="duration" data-value="short">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                                    <span data-i18n="searchPage.upTo1min">До 1 мин</span>
+                                </button>
+                                <button class="sorting-option filter-item" data-filter="duration" data-value="5min">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                                    <span data-i18n="searchPage.upTo5min">До 5 мин</span>
+                                </button>
+                                <button class="sorting-option filter-item" data-filter="duration" data-value="10min">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                                    <span data-i18n="searchPage.upTo10min">До 10 мин</span>
+                                </button>
+                                <button class="sorting-option filter-item" data-filter="duration" data-value="20min">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                                    <span data-i18n="searchPage.upTo20min">До 20 мин</span>
+                                </button>
+                                <button class="sorting-option filter-item" data-filter="duration" data-value="60min">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                                    <span data-i18n="searchPage.upTo1hour">До 1 часа</span>
+                                </button>
+                                <button class="sorting-option filter-item" data-filter="duration" data-value="long">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                                    <span data-i18n="searchPage.over1hour">Больше часа</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Сброс фильтров -->
+                        <div class="sorting-group">
+                            <div class="sorting-options">
+                                <button class="sorting-option clear-filters" id="clearFilters">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                    <span data-i18n="searchPage.clearAll">Сбросить все</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="resultsGrid" class="latest-grid"></div>
+            <div id="paginationContainer"></div>
+            <div id="noResults" class="empty-state" style="display:none;"></div>
+        </main>
+        </div><!-- /content-wrapper -->
+    </div>
+
+    <!-- Search Help Modal -->
+    <div id="searchHelpModal" class="search-help-modal">
+        <div class="search-help-content">
+            <span class="search-help-close">&times;</span>
+            <div class="search-help-title" data-i18n="searchPage.helpTitle">Справка по поиску</div>
+            
+            <div class="search-help-section">
+                <h3 data-i18n="searchPage.helpBooleanOperators">Булевы операторы</h3>
+                <div class="search-help-description" data-i18n="searchPage.helpBooleanDesc">Используйте операторы для точного поиска:</div>
+                <div class="search-help-examples">
+<span data-i18n="searchPage.helpBooleanAnd">AND, &&, & - логическое И</span><br>
+<span data-i18n="searchPage.helpBooleanOr">OR, ||, | - логическое ИЛИ</span><br>
+<span data-i18n="searchPage.helpBooleanNot">NOT, !, - - логическое НЕ</span>
+                </div>
+            </div>
+
+            <div class="search-help-section">
+                <h3 data-i18n="searchPage.helpBooleanExamples">Примеры булевых запросов</h3>
+                <div class="search-help-examples">
+<span data-i18n="searchPage.helpBooleanEx1">аниме AND игры - видео с тегами "аниме" и "игры"</span><br>
+<span data-i18n="searchPage.helpBooleanEx2">сериалы OR фильмы - видео с тегом "сериалы" или "фильмы"</span><br>
+<span data-i18n="searchPage.helpBooleanEx3">комедия NOT ужасы - комедии без ужасов</span>
+                </div>
+            </div>
+
+            <div class="search-help-section">
+                <h3 data-i18n="searchPage.helpExactSearch">Точный поиск фраз</h3>
+                <div class="search-help-description" data-i18n="searchPage.helpExactDesc">Используйте кавычки для поиска точной фразы:</div>
+                <div class="search-help-examples">
+<span data-i18n="searchPage.helpExactEx1">"новый эпизод" - поиск точной фразы</span><br>
+<span data-i18n="searchPage.helpExactEx2">"аниме 2024" AND "новинка" - комбинация фразы и тега</span>
+                </div>
+            </div>
+
+            <div class="search-help-section">
+                <h3 data-i18n="searchPage.helpWildcard">Wildcard поиск</h3>
+                <div class="search-help-description" data-i18n="searchPage.helpWildcardDesc">Используйте * для поиска по маске:</div>
+                <div class="search-help-examples">
+<span data-i18n="searchPage.helpWildcardEx1">аниме* - найдет "аниме", "анимешка", "анимешный"</span><br>
+<span data-i18n="searchPage.helpWildcardEx2">*сериал* - найдет "сериал", "сериалы", "мини-сериал"</span><br>
+<span data-i18n="searchPage.helpWildcardEx3">*2024* - найдет все с "2024" в названии</span>
+                </div>
+            </div>
+
+            <div class="search-help-section">
+                <h3 data-i18n="searchPage.helpNormalSearch">Обычный поиск</h3>
+                <div class="search-help-description" data-i18n="searchPage.helpNormalDesc">Без операторов работает нечеткий поиск по названиям и тегам:</div>
+                <div class="search-help-examples">
+<span data-i18n="searchPage.helpNormalEx1">аниме - найдет видео с "аниме" в названии или тегах</span><br>
+<span data-i18n="searchPage.helpNormalEx2">игры 2024 - найдет видео с "игры" и "2024"</span><br>
+<span data-i18n="searchPage.helpNormalEx3">комедия сериал - найдет комедийные сериалы</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+    const DEBUG = false;
+    const debug = {
+      log: (...args) => { if (DEBUG) console.log(...args); },
+      warn: (...args) => { if (DEBUG) console.warn(...args); },
+      error: (...args) => { if (DEBUG) console.error(...args); }
+    };
+
+    const supportsFS = 'showDirectoryPicker' in window;
+    let db = null;
+    let videoDirectoryHandle = null;
+    let allVideos = [];
+    let allPlaylists = [];
+    let allChannels = [];
+    let videoNameToChannels = new Map();
+    let debounceTimer = null;
+    let dataLoaded = false;
+
+    const __params = new URLSearchParams(window.location.search);
+    let currentView = __params.get('view') || localStorage.getItem('youvi_search_view') || 'grid';
+    let currentType = __params.get('type') || localStorage.getItem('youvi_search_type') || 'videos';
+    let currentPage = parseInt(__params.get('page')||'1', 10) || 1;
+    const ITEMS_PER_PAGE = 48;
+
+
+    async function openDB(){
+      return new Promise((resolve,reject)=>{
+        const req = indexedDB.open('8SiteDB', 1);
+        req.onupgradeneeded = ()=>{ const db=req.result; if(!db.objectStoreNames.contains('handles')) db.createObjectStore('handles'); if(!db.objectStoreNames.contains('videos')) db.createObjectStore('videos',{ keyPath:'name' }); if(!db.objectStoreNames.contains('playlists')) db.createObjectStore('playlists',{ keyPath:'id' }); };
+        req.onsuccess = ()=> resolve(req.result);
+        req.onerror = ()=> reject(req.error);
+      });
+    }
+    async function getFromDB(key){ const tx=db.transaction('handles','readonly'); const store=tx.objectStore('handles'); return new Promise(r=>{ const q=store.get(key); q.onsuccess=()=>r(q.result); q.onerror=()=>r(null); }); }
+    async function saveVideoToDB(video){ const tx=db.transaction('videos','readwrite'); await tx.objectStore('videos').put(video); }
+    async function getVideosFromDB(){ const tx=db.transaction('videos','readonly'); return new Promise(r=>{ const q=tx.objectStore('videos').getAll(); q.onsuccess=()=>r(q.result||[]); q.onerror=()=>r([]); }); }
+
+    async function getVideoMetadata(dirHandle, fileName){
+      try{
+        const metaDir = await dirHandle.getDirectoryHandle('.metadata', { create:true });
+        const metaHandle = await metaDir.getFileHandle(fileName + '.meta.json');
+        const file = await metaHandle.getFile();
+        return JSON.parse(await file.text());
+      }catch(e){ return { views:0, likes:0, dislikes:0, tags:[], created:Date.now() }; }
+    }
+
+    async function getPreviewAndDuration(video){
+      if (video._cachedPreview && video._cachedDuration) return { preview: video._cachedPreview, duration: video._cachedDuration };
+      const dirHandle = video.dirHandle || videoDirectoryHandle;
+      const meta = await getVideoMetadata(dirHandle, video.name);
+      if (meta.preview && meta.duration) { video._cachedPreview = meta.preview; video._cachedDuration = meta.duration; return { preview: meta.preview, duration: meta.duration }; }
+      if (!video.file) return { preview: '', duration: '0:00' };
+      return new Promise((resolve)=>{
+        const el=document.createElement('video'); el.muted=true; el.playsInline=true; el.preload='metadata';
+        const url=URL.createObjectURL(video.file);
+        const cleanup=()=>{ URL.revokeObjectURL(url); el.remove(); };
+        const timeout=setTimeout(()=>{ cleanup(); resolve({ preview:null, duration:'0:00' }); }, 12000);
+        el.addEventListener('loadedmetadata',()=>{
+          const duration = formatDuration(el.duration);
+          el.currentTime = Math.max(0, el.duration/2);
+          el.addEventListener('seeked', async ()=>{
+            const canvas=document.createElement('canvas'); canvas.width=240; canvas.height=140; const ctx=canvas.getContext('2d');
+            ctx.drawImage(el,0,0,canvas.width,canvas.height);
+            let preview; try{ preview=canvas.toDataURL('image/webp',0.8);}catch(_){ preview=canvas.toDataURL('image/jpeg',0.7);} 
+            cleanup(); clearTimeout(timeout);
+            video._cachedPreview = preview; video._cachedDuration = duration;
+            resolve({ preview, duration });
+          }, { once:true });
+        }, { once:true });
+        el.addEventListener('error',()=>{ clearTimeout(timeout); cleanup(); resolve({ preview:null, duration:'0:00' }); }, { once:true });
+        el.src=url;
+      });
+    }
+
+    function formatDuration(sec){ if(!isFinite(sec)||isNaN(sec)||sec<=0) return '0:00'; const s=Math.round(sec); const h=Math.floor(s/3600); const m=Math.floor((s%3600)/60); const ss=String(s%60).padStart(2,'0'); return h>0?`${h}:${String(m).padStart(2,'0')}:${ss}`:`${m}:${ss}`; }
+    function getFileNameWithoutExtension(name){ return name.replace(/\.[^/.]+$/, ''); }
+    function escapeHtml(text){ const d=document.createElement('div'); d.textContent=text??''; return d.innerHTML; }
+    function getVideoQuality(video){ if(video.quality) return video.quality; const n=video.name.toLowerCase(); if(n.includes('4k')||n.includes('2160p')||n.includes('uhd')) return '4K'; if(n.includes('1080p')||n.includes('fhd')) return '1080p'; if(n.includes('720p')||n.includes('hd')) return '720p'; if(n.includes('480p')||n.includes('sd')) return '480p'; const mb=(video.size||0)/(1024*1024); if(mb>1000) return '4K'; if(mb>500) return '1080p'; if(mb>200) return '720p'; if(mb>50) return '480p'; return 'SD'; }
+
+    function levenshteinDistance(a, b) {
+      if (!a) return b.length; if (!b) return a.length;
+      const al=a.length, bl=b.length;
+      const dp = Array.from({length: bl+1}, (_,j)=>j);
+      for (let i=1;i<=al;i++){
+        let prev = dp[0]; dp[0] = i;
+        for (let j=1;j<=bl;j++){
+          const temp = dp[j];
+          if (a[i-1] === b[j-1]) dp[j] = prev;
+          else dp[j] = Math.min(prev+1, dp[j]+1, dp[j-1]+1);
+          prev = temp;
+        }
+      }
+      return dp[bl];
+    }
+
+    function fuzzyMatch(query, target, threshold = 0.7) {
+      if (!query || !target) return false;
+      if (target.includes(query)) return true;
+      const distance = levenshteinDistance(query, target);
+      const maxLength = Math.max(query.length, target.length);
+      return maxLength === 0 ? true : (maxLength - distance) / maxLength >= threshold;
+    }
+
+
+async function loadAllVideos(){
+  allVideos = [];
+  if (!videoDirectoryHandle) return;
+  const exts = ['.mp4','.avi','.mov','.mkv','.webm','.m4v'];
+  const cached = await getVideosFromDB(); 
+  const map = new Map(cached.map(v=>[v.name,v]));
+  
+  debug.log('Начинаем загрузку видео...');
+  const startTime = performance.now();
+  
+  let videosBuffer = [];
+  const BATCH_SIZE = 50;
+  
+  function addToBuffer(videoData) {
+    videosBuffer.push(videoData);
+    if (videosBuffer.length >= BATCH_SIZE) {
+      allVideos.push(...videosBuffer);
+      videosBuffer = [];
+      debug.log(`Загружено ${allVideos.length} видео...`);
+    }
+  }
+  
+  async function scan(dir){
+    const entries = [];
+    for await (const [name, handle] of dir.entries()) {
+      entries.push([name, handle]);
+    }
+
+    for (let i = 0; i < entries.length; i += BATCH_SIZE) {
+      const batch = entries.slice(i, i + BATCH_SIZE);
+      
+      await Promise.all(
+        batch.map(async ([name, handle]) => {
+          if (handle.kind==='file'){
+            const lower=name.toLowerCase(); 
+            if(!exts.some(ext=>lower.endsWith(ext))) return;
+            
+            try {
+              const file = await handle.getFile(); 
+              const cachedVideo = map.get(name);
+              
+              if (!cachedVideo || cachedVideo.modified !== file.lastModified){
+                const meta = await getVideoMetadata(dir, name);
+                const data = { 
+                  name, 
+                  size:file.size, 
+                  modified:file.lastModified, 
+                  created: meta.created||file.lastModified, 
+                  views: meta.views||0, 
+                  tags: meta.tags||[], 
+                  quality: meta.quality||getVideoQuality({ name, size:file.size }) 
+                };
+                addToBuffer({ ...data, handle, file, dirHandle: dir });
+                await saveVideoToDB(data);
+              } else {
+                const freshMeta = await getVideoMetadata(dir, name);
+                addToBuffer({
+                  ...cachedVideo,
+                  handle,
+                  file,
+                  dirHandle: dir,
+                  created: cachedVideo.created || file.lastModified,
+                  views: Math.max(cachedVideo.views||0, freshMeta.views||0),
+                  likes: Math.max(cachedVideo.likes||0, freshMeta.likes||0),
+                  dislikes: Math.max(cachedVideo.dislikes||0, freshMeta.dislikes||0),
+                  tags: freshMeta.tags || cachedVideo.tags || [],
+                  quality: cachedVideo.quality || getVideoQuality({ name, size:file.size })
+                });
+              }
+            } catch(_){}
+          } else if(handle.kind==='directory' && name!=='.channels' && name!=='.metadata' && name!=='.history'){ 
+            await scan(handle); 
+          }
+        })
+      );
+
+      await new Promise(resolve => setTimeout(resolve, 0));
+    }
+  }
+  
+  await scan(videoDirectoryHandle);
+
+  if (videosBuffer.length > 0) {
+    allVideos.push(...videosBuffer);
+  }
+  
+  const endTime = performance.now();
+  debug.log(`Загружено ${allVideos.length} видео за ${(endTime - startTime).toFixed(0)}мс`);
+}
+
+async function loadChannelIndex(){
+  videoNameToChannels.clear();
+  try{
+    const channelsDir = await videoDirectoryHandle.getDirectoryHandle('.channels', { create:true });
+    
+    const dirEntries = [];
+    for await (const [dirName, handle] of channelsDir.entries()){
+      if (handle.kind === 'directory') dirEntries.push([dirName, handle]);
+    }
+
+    for (let i = 0; i < dirEntries.length; i += 10) {
+      const batch = dirEntries.slice(i, i + 10);
+      
+      await Promise.all(
+        batch.map(async ([dirName, handle]) => {
+          try{
+            const fh = await handle.getFileHandle('channel.json');
+            const f = await fh.getFile();
+            const data = JSON.parse(await f.text());
+            const playlists = Array.isArray(data.playlists) ? data.playlists : [];
+            for (const pl of playlists){
+              const vids = Array.isArray(pl.videos) ? pl.videos : [];
+              for (const v of vids){
+                const vn = v && v.name ? v.name : null;
+                if (!vn) continue;
+                const set = videoNameToChannels.get(vn) || new Set();
+                set.add(dirName);
+                videoNameToChannels.set(vn, set);
+              }
+            }
+          } catch(_) {}
+        })
+      );
+      
+      if (i % 50 === 0) {
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
+    }
+  } catch(_) {}
+}
+
+    async function loadImageFile(dirHandle, name){
+      try{
+        const fh = await dirHandle.getFileHandle(name);
+        const f = await fh.getFile();
+        return URL.createObjectURL(f);
+      }catch(_){ return null; }
+    }
+
+    function applyViewButtons(){
+      const buttons = [
+        document.getElementById('viewBtnGrid'),
+        document.getElementById('viewBtnList'),
+        document.getElementById('viewBtnCompact')
+      ].filter(Boolean);
+      buttons.forEach(btn=> btn.classList.toggle('active', btn && btn.dataset.view===currentView));
+    }
+
+    function renderResults(videos){
+      const grid = document.getElementById('resultsGrid'); const empty = document.getElementById('noResults'); const pag=document.getElementById('paginationContainer'); if(pag) pag.innerHTML='';
+      grid.innerHTML = '';
+
+      if (currentType === 'channels'){
+        const isGrid = currentView === 'grid';
+        grid.className = isGrid ? 'channels-grid' : (currentView === 'list' ? 'channels-list' : 'channels-compact');
+        if (!videos || videos.length===0){ empty.style.display = currentQuery ? 'block' : 'none'; empty.textContent = currentQuery ? `Каналы не найдены по запросу "${currentQuery}"` : ''; return; }
+        empty.style.display = 'none';
+        const total = videos.length; const totalPages = Math.max(1, Math.ceil(total/ITEMS_PER_PAGE));
+        currentPage = Math.min(Math.max(1, currentPage), totalPages);
+        const start=(currentPage-1)*ITEMS_PER_PAGE; const end=Math.min(start+ITEMS_PER_PAGE,total);
+        const pageItems = videos.slice(start,end);
+        for (const ch of pageItems){
+          const videosWord = i18n.t('main.videos') || 'видео';
+          const viewsWord = i18n.t('main.views') || 'просмотров';
+          const statsText = `${(ch.videoCount||0)} ${videosWord} • ${(ch.viewCount||0)} ${viewsWord}`;
+          if (isGrid){
+          const card = document.createElement('div'); card.className='channel-card';
+            const av = document.createElement('div'); av.className='channel-avatar'; if (ch.avatar){ av.style.backgroundImage = `url(${ch.avatar})`; av.style.backgroundSize='cover'; av.style.backgroundPosition='center'; av.style.backgroundRepeat='no-repeat'; } else { av.textContent=(ch.name||'?').charAt(0).toUpperCase(); }
+          const info = document.createElement('div'); info.className='channel-info';
+            const name = document.createElement('div'); name.className='channel-name'; name.innerHTML = `<a href="youvi_ch_view.html?channel=${encodeURIComponent(ch.name)}">${escapeHtml(ch.name||'')}</a>`;
+            const stats = document.createElement('div'); stats.className='channel-stats'; stats.textContent = statsText;
+            const btn = document.createElement('button'); btn.className='subscribe-toggle-btn';
+            const isSub = Array.isArray(window.__youviSubs) && window.__youviSubs.includes(ch.name);
+            if (isSub) btn.classList.add('subscribed');
+            btn.textContent = isSub ? (i18n.t('video.subscribed') || 'Подписан') : (i18n.t('searchPage.subscribe') || 'Подписаться');
+            btn.addEventListener('click', async (e)=>{ e.stopPropagation(); e.preventDefault(); await toggleSubscription(ch.name, btn); });
+          info.appendChild(name); info.appendChild(stats);
+            card.appendChild(av); card.appendChild(info); card.appendChild(btn);
+            card.addEventListener('click',()=>{ window.location.href=`youvi_ch_view.html?channel=${encodeURIComponent(ch.name)}`; });
+          grid.appendChild(card);
+          } else {
+            const row = document.createElement('div'); row.className='channel-row'; row.addEventListener('click',()=>{ window.location.href=`youvi_ch_view.html?channel=${encodeURIComponent(ch.name)}`; });
+            const av = document.createElement('div'); av.className='channel-avatar'; if (ch.avatar){ av.style.backgroundImage = `url(${ch.avatar})`; av.style.backgroundSize='cover'; av.style.backgroundPosition='center'; av.style.backgroundRepeat='no-repeat'; } else { av.textContent=(ch.name||'?').charAt(0).toUpperCase(); }
+            const info = document.createElement('div'); info.style.flex='1';
+            const name = document.createElement('div'); name.style.cssText='font-size:13px;font-weight:600;color:#111;'; name.innerHTML = `<a href="youvi_ch_view.html?channel=${encodeURIComponent(ch.name)}" style="color:#ff69b4;text-decoration:none;">${escapeHtml(ch.name||'')}</a>`;
+            const stats = document.createElement('div'); stats.style.cssText='font-size:11px;color:#666;'; stats.textContent = statsText;
+            const btn = document.createElement('button'); btn.className='subscribe-toggle-btn';
+            const isSub = Array.isArray(window.__youviSubs) && window.__youviSubs.includes(ch.name);
+            if (isSub) btn.classList.add('subscribed');
+            btn.textContent = isSub ? (i18n.t('video.subscribed') || 'Подписан') : (i18n.t('searchPage.subscribe') || 'Подписаться');
+            btn.addEventListener('click', async (e)=>{ e.stopPropagation(); e.preventDefault(); await toggleSubscription(ch.name, btn); });
+            info.appendChild(name); info.appendChild(stats);
+            row.appendChild(av); row.appendChild(info); row.appendChild(btn);
+            grid.appendChild(row);
+          }
+        }
+        renderPagination(totalPages, total);
+        return;
+      }
+
+      grid.className = currentView === 'grid' ? 'latest-grid' : (currentView === 'list' ? 'results-list' : 'results-compact');
+      if (!videos || videos.length===0){ empty.style.display = currentQuery ? 'block' : 'none'; empty.textContent = currentQuery ? `${i18n.t('searchPage.noResults') || 'Ничего не найдено по запросу'} "${currentQuery}"` : ''; return; }
+      empty.style.display = 'none';
+      const total = videos.length; const totalPages = Math.max(1, Math.ceil(total/ITEMS_PER_PAGE));
+      currentPage = Math.min(Math.max(1, currentPage), totalPages);
+      const start=(currentPage-1)*ITEMS_PER_PAGE; const end=Math.min(start+ITEMS_PER_PAGE,total);
+      const pageItems = videos.slice(start,end);
+      for (const v of pageItems){
+
+        if (currentType === 'playlists'){
+          const card=document.createElement('div'); card.className='video-card';
+          const url=`youvi_playlists_view.html?playlistId=${encodeURIComponent(v.id||v.title||'')}`;
+
+          const link=document.createElement('a'); link.className='video-thumbnail'; link.href=url;
+          const thumbGrid=document.createElement('div'); thumbGrid.className='playlist-thumbnail';
+
+          for (let i=0;i<4;i++){
+            const cell=document.createElement('div'); cell.className='playlist-thumb';
+            if (v.videos && v.videos[i]){
+              const pv = v.videos[i];
+              cell.textContent = getFileNameWithoutExtension(pv.name).slice(0,10) + '…';
+
+              getPreviewAndDuration(pv).then(({preview})=>{
+                if (preview) {
+                  cell.innerHTML = `<img src="${preview}" style="width:100%;height:100%;object-fit:cover">`;
+                }
+              }).catch(()=>{  });
+            }
+            thumbGrid.appendChild(cell);
+          }
+          const countBadge=document.createElement('div'); countBadge.className='playlist-count-badge'; countBadge.textContent = `${(v.videos||[]).length} ${i18n.t('searchPage.playlistVideos') || 'видео'}`; thumbGrid.appendChild(countBadge);
+          link.appendChild(thumbGrid);
+
+          const info=document.createElement('div'); info.className='video-info';
+          const channelLine = v.channelName ? `<a href="youvi_ch_view.html?channel=${encodeURIComponent(v.channelName)}" class="playlist-channel-link" style="color:#ff69b4;text-decoration:none;font-weight:500;">${escapeHtml(v.channelName)}</a>` : '<span>Без канала</span>';
+          info.innerHTML = `
+            <div class="playlist-channel" style="font-size:10px;color:#ff69b4;">${channelLine}</div>
+            <div class="video-card-title"><a href="${url}" class="video-title-link" style="color:inherit;text-decoration:none;" title="${escapeHtml(v.title||'Без названия')}">${escapeHtml(v.title||'Без названия')}</a></div>
+            <div class="video-views">${(v.videos||[]).length} ${i18n.t('searchPage.playlistVideos') || 'видео'}</div>`;
+
+          card.addEventListener('click', ()=>{ window.location.href = url; });
+          card.appendChild(link); card.appendChild(info); grid.appendChild(card);
+          continue;
+        }
+        const card=document.createElement('div'); card.className='video-card';
+        const link=document.createElement('a'); link.className='video-thumbnail'; 
+        const url = window.VideoID 
+            ? window.VideoID.buildVideoUrl(v.name)
+            : `youvi_video.html?name=${encodeURIComponent(v.name)}&playlist=`; 
+        link.href=url;
+
+        if (!v.file || !v.handle) {
+          const found = allVideos.find(av => av.name === v.name);
+          if (found) {
+            Object.assign(v, {
+              file: found.file,
+              handle: found.handle,
+              dirHandle: found.dirHandle,
+              size: found.size,
+              modified: found.modified,
+              duration: found.duration
+            });
+            debug.log(`Fixed missing file/handle for video: "${v.name}"`);
+          } else {
+            debug.warn(`Video "${v.name}" missing file/handle properties and not found in allVideos`);
+          }
+        }
+        
+        const badges=[]; const q=getVideoQuality(v); if(q){ badges.push(`<div class="video-quality" data-quality="${q}">${q}</div>`); }
+        if (v.created && (Date.now()-v.created) < 24*60*60*1000){ badges.push(`<div class="video-new">Новинка</div>`); }
+        link.innerHTML = `<div class="video-duration">...</div>${badges.join('')}<div style="width:100%;height:100%;background:#eee;display:flex;align-items:center;justify-content:center;color:#111;font-size:10px;text-align:center;padding:5px;">${escapeHtml(getFileNameWithoutExtension(v.name))}</div>`;
+        const info=document.createElement('div'); info.className='video-info';
+
+        const channelTags = (v.tags||[]).filter(t=>t && t.includes('(ка)'));
+        let primaryChannel = '';
+        if (channelTags.length>0){ primaryChannel = channelTags[0].replace(' (ка)',''); }
+        else { const idx = videoNameToChannels.get(v.name); if (idx && idx.size) primaryChannel = Array.from(idx)[0]; }
+
+        let channelRow = '';
+        if (primaryChannel){
+          channelRow = `<div class="video-channel-row"><span class="channel-avatar-mini" data-channel="${escapeHtml(primaryChannel)}">${escapeHtml(primaryChannel.charAt(0).toUpperCase())}</span><a href="youvi_ch_view.html?channel=${encodeURIComponent(primaryChannel)}" class="playlist-channel-link" style="color:#ff69b4;text-decoration:none;font-weight:500;">${escapeHtml(primaryChannel)}</a></div>`;
+
+          (async ()=>{
+            try{
+              const channelsDir = await videoDirectoryHandle.getDirectoryHandle('.channels', { create:true });
+              const chDir = await channelsDir.getDirectoryHandle(primaryChannel, { create:true });
+              try{
+                const fh = await chDir.getFileHandle('channel.json');
+                const f = await fh.getFile();
+                const data = JSON.parse(await f.text());
+                if (data && data.avatar){
+                  const imgHandle = await chDir.getFileHandle(data.avatar);
+                  const imgFile = await imgHandle.getFile();
+                  const url = URL.createObjectURL(imgFile);
+                  const el = info.querySelector('.channel-avatar-mini[data-channel="'+CSS.escape(primaryChannel)+'"]');
+                  if (el){ el.style.backgroundImage = `url(${url})`; el.textContent=''; }
+                }
+              }catch(_){ }
+            }catch(_){ }
+          })();
+        }
+
+        const createdDate = v.created ? new Date(v.created) : null;
+        const dateStr = createdDate ? `${String(createdDate.getDate()).padStart(2,'0')}/${String(createdDate.getMonth()+1).padStart(2,'0')}/${createdDate.getFullYear()}` : '';
+        const viewsCount = typeof v.views==='number' ? v.views : 0;
+        const danmakuCount = v.danmakuCount || (window.DanmakuCounter ? window.DanmakuCounter.get(v.name) : 0);
+        const viewsSvg = `<svg width="12" height="12" viewBox="0 0 24 24" style="display:inline;vertical-align:-2px;"><path fill="#888" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
+        const danmakuSvg = `<svg width="12" height="12" viewBox="0 0 24 24" style="display:inline;vertical-align:-2px;"><path fill="#888" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>`;
+        
+        let metaLine;
+        if (currentView === 'list' || currentView === 'compact') {
+            // List/Compact: all in one line
+            metaLine = `<div class="video-meta-line" style="color:#888;font-size:12px;">${dateStr ? dateStr + ' • ' : ''}${viewsSvg} ${viewsCount.toLocaleString()} • ${danmakuSvg} ${danmakuCount}</div>`;
+        } else {
+            // Grid: separate lines
+            const dateLine = dateStr ? `<div class="video-meta-line" style="color:#888;font-size:12px;">${dateStr}</div>` : '';
+            const statsLine = `<div class="video-meta-line" style="color:#888;font-size:12px;">${viewsSvg} ${viewsCount.toLocaleString()} • ${danmakuSvg} ${danmakuCount}</div>`;
+            metaLine = dateLine + statsLine;
+        }
+
+        const descText = Array.isArray(v.tags) ? v.tags.filter(t=>!t.includes('(ка)')).join(', ') : '';
+        const descLine = descText ? `<div class="video-desc">${escapeHtml(descText)}</div>` : '';
+        info.innerHTML = `<div class="video-card-title"><a href="${url}" class="video-title-link" style="color:inherit;text-decoration:none;" title="${escapeHtml(getFileNameWithoutExtension(v.name))}">${escapeHtml(getFileNameWithoutExtension(v.name))}</a></div>${metaLine}${descLine}${channelRow}`;
+        card.appendChild(link); card.appendChild(info); grid.appendChild(card);
+
+        if (v.file && v.handle && typeof addHoverPreview === 'function') {
+
+          const videoData = {
+            ...v,
+            file: v.file,
+            handle: v.handle,
+            dirHandle: v.dirHandle
+          };
+          addHoverPreview(link, videoData);
+        }
+        
+        if (v.file && v.handle){ loadVideoPreviewImmediately(v, link); }
+      }
+      renderPagination(totalPages, total);
+    }
+
+    async function loadVideoPreviewImmediately(video, thumb){
+      const { preview, duration } = await getPreviewAndDuration(video);
+
+      let existingImg = thumb.querySelector('img');
+      let existingDuration = thumb.querySelector('.video-duration');
+      let existingQuality = thumb.querySelector('.video-quality');
+      let existingNew = thumb.querySelector('.video-new');
+      let existingFallback = thumb.querySelector('div[style*="background:#eee"]');
+
+      if (existingDuration) {
+        existingDuration.textContent = duration || '0:00';
+      } else {
+        const d = document.createElement('div'); 
+        d.className = 'video-duration'; 
+        d.textContent = duration || '0:00'; 
+        thumb.appendChild(d);
+      }
+
+      const q = getVideoQuality(video); 
+      if (q) { 
+        if (existingQuality) {
+          existingQuality.textContent = q;
+          existingQuality.setAttribute('data-quality', q);
+        } else {
+          const el = document.createElement('div'); 
+          el.className = 'video-quality'; 
+          el.setAttribute('data-quality', q);
+          el.textContent = q; 
+          el.style.cssText = 'position:absolute;top:5px;left:5px;padding:2px 4px;border-radius:2px;font-size:10px;color:#fff;z-index:3;font-weight:bold;'; 
+          thumb.appendChild(el);
+        }
+      }
+
+      if (video.created && (Date.now()-video.created) < 24*60*60*1000) { 
+        if (!existingNew) {
+          const ne = document.createElement('div'); 
+          ne.className = 'video-new'; 
+          ne.textContent = 'Новинка'; 
+          ne.style.cssText = 'position:absolute;top:5px;right:5px;background:#ff4444;padding:2px 6px;border-radius:2px;font-size:10px;color:#fff;z-index:3;font-weight:bold;text-transform:uppercase;'; 
+          thumb.appendChild(ne);
+        }
+      }
+
+      if (preview) { 
+        if (existingImg) {
+          existingImg.src = preview;
+          existingImg.style.cssText = 'width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;z-index:1;';
+        } else {
+          const img = document.createElement('img'); 
+          img.src = preview; 
+          img.style.cssText = 'width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;z-index:1;'; 
+          thumb.appendChild(img);
+        }
+
+        const durationEl = thumb.querySelector('.video-duration');
+        if (durationEl) {
+          durationEl.style.cssText = 'position:absolute;bottom:5px;right:5px;background:rgba(0,0,0,0.8);padding:2px 4px;border-radius:2px;font-size:11px;color:#fff;z-index:2;';
+        }
+      } else { 
+
+        if (!existingImg && !existingFallback) {
+          const fb = document.createElement('div'); 
+          fb.style.cssText = 'width:100%;height:100%;background:#eee;display:flex;align-items:center;justify-content:center;color:#111;font-size:10px;text-align:center;padding:5px;position:absolute;top:0;left:0;z-index:1;'; 
+          fb.textContent = escapeHtml(getFileNameWithoutExtension(video.name)); 
+          thumb.appendChild(fb);
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      if (!supportsFS){ document.getElementById('resultsGrid').innerHTML = '<div class="empty-state" style="color:red"><strong>File System API не поддерживается в этом браузере. Используйте Chrome/Edge.</strong></div>'; return; }
+      try{
+        db = await openDB();
+        const savedHandle = await getFromDB('videoDirectoryHandle');
+        if (savedHandle){
+          const perm = await savedHandle.queryPermission();
+          if (perm==='granted' || (perm==='prompt' && await savedHandle.requestPermission()==='granted')){
+            videoDirectoryHandle = savedHandle;
+            await loadAllVideos();
+            await loadChannelIndex();
+
+            try{ 
+              debug.log('Загружаем плейлисты и каналы...');
+              const startTime = performance.now();
+
+              allPlaylists = [];
+              try {
+                const channelsDir = await videoDirectoryHandle.getDirectoryHandle('.channels', { create:true });
+                const channelEntries = [];
+                for await (const [name, handle] of channelsDir.entries()){
+                  if (handle.kind === 'directory') channelEntries.push([name, handle]);
+                }
+
+                for (let i = 0; i < channelEntries.length; i += 5) {
+                  const batch = channelEntries.slice(i, i + 5);
+                  
+                  await Promise.all(batch.map(async ([name, handle]) => {
+                    try{
+                      const fh = await handle.getFileHandle('channel.json');
+                      const f = await fh.getFile();
+                      const data = JSON.parse(await f.text());
+                      const playlists = Array.isArray(data.playlists) ? data.playlists : [];
+                      playlists.forEach(pl=>{
+
+                        const videosWithHandles = (pl.videos || []).map(video => {
+                          const foundVideo = allVideos.find(av => av.name === video.name);
+                          if (foundVideo) {
+                            return { ...video, handle: foundVideo.handle, file: foundVideo.file, dirHandle: foundVideo.dirHandle };
+                          }
+                          return video;
+                        });
+                        allPlaylists.push({ id: pl.id || `${name}:${pl.title}`, title: pl.title||'', channelName: name, videos: videosWithHandles });
+                      });
+                    }catch(_){}
+                  }));
+
+                  if (i % 20 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 5));
+                  }
+                }
+                
+                try{
+                  const fh = await videoDirectoryHandle.getFileHandle('.global_playlists.json');
+                  const f = await fh.getFile();
+                  const arr = JSON.parse(await f.text());
+                  (Array.isArray(arr)?arr:[]).forEach(pl=>{
+
+                    const videosWithHandles = (pl.videos || []).map(video => {
+                      const foundVideo = allVideos.find(av => av.name === video.name);
+                      if (foundVideo) {
+                        return { ...video, handle: foundVideo.handle, file: foundVideo.file, dirHandle: foundVideo.dirHandle };
+                      }
+                      return video;
+                    });
+                    allPlaylists.push({ id: pl.id || pl.title, title: pl.title||'', channelName: null, videos: videosWithHandles });
+                  });
+                }catch(_){}
+
+                allChannels = [];
+                for (let i = 0; i < channelEntries.length; i += 5) {
+                  const batch = channelEntries.slice(i, i + 5);
+                  
+                  await Promise.all(batch.map(async ([name, handle]) => {
+                    let videoCount = 0; 
+                    let viewCount = 0; 
+                    let avatarUrl = null;
+                    try{
+                      const fh = await handle.getFileHandle('channel.json');
+                      const f = await fh.getFile();
+                      const data = JSON.parse(await f.text());
+                      if (data && data.avatar){
+                        try{
+                          const imgHandle = await handle.getFileHandle(data.avatar);
+                          const imgFile = await imgHandle.getFile();
+                          avatarUrl = URL.createObjectURL(imgFile);
+                        }catch(_){}
+                      }
+
+                      const chTag1 = `${name} (ка)`;
+                      const chTag2 = `${name}(ка)`;
+                      const chTag3 = name;
+                      
+                      for (const v of allVideos){
+                        const tags = Array.isArray(v.tags) ? v.tags : [];
+
+                        const hasTag = tags.some(tag => {
+                          return tag === chTag1 || tag === chTag2 || tag === chTag3 || 
+                                 tag.replace(/\s*\(ка\)\s*$/, '') === name;
+                        });
+                        
+                        if (hasTag){
+                          videoCount++;
+                          if (typeof v.views === 'number') viewCount += v.views;
+                        }
+                      }
+                    }catch(_){}
+                    allChannels.push({ name, videoCount, viewCount, avatar: avatarUrl });
+                  }));
+                  
+                  if (i % 20 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 5));
+                  }
+                }
+                
+                const endTime = performance.now();
+                debug.log(`Загружено плейлистов: ${allPlaylists.length}, каналов: ${allChannels.length} за ${(endTime - startTime).toFixed(0)}мс`);
+              }catch(_){}
+            }catch(_){}
+
+            if (window.tagDatabaseManager && !window.tagDatabaseManager.isLoaded) {
+              try {
+                await window.tagDatabaseManager.initialize(videoDirectoryHandle);
+                debug.log('[Search] ✅ Tag database loaded');
+              } catch (error) {
+                debug.warn('[Search] ⚠️ Failed to load tag database:', error);
+              }
+            }
+
+            if (!window.tagAliasSearch && window.TagAliasSearch && window.tagDatabaseManager && window.tagDatabaseManager.isLoaded) {
+              window.tagAliasSearch = new window.TagAliasSearch(window.tagDatabaseManager);
+              debug.log('[Search] ✅ Tag alias search initialized');
+            }
+
+            dataLoaded = true;
+            debug.log('[Data] ✅ Все данные загружены. Готов к поиску.');
+
+            // Load danmaku counts BEFORE search
+            if (window.DanmakuCounter) {
+              await window.DanmakuCounter.load(videoDirectoryHandle, allVideos);
+              debug.log('[Danmaku] ✅ Counts loaded');
+            }
+
+              try{
+                const local = localStorage.getItem('8site_subscriptions');
+                window.__youviSubs = Array.isArray(JSON.parse(local||'[]')) ? JSON.parse(local||'[]') : [];
+                if ((!window.__youviSubs || !window.__youviSubs.length) && videoDirectoryHandle){
+                  try{
+                    const fh = await videoDirectoryHandle.getFileHandle('.subscriptions.json');
+                    const f = await fh.getFile();
+                    const arr = JSON.parse(await f.text());
+                    if (Array.isArray(arr)) window.__youviSubs = arr;
+                  }catch(_){ window.__youviSubs = window.__youviSubs || []; }
+                }
+
+                try{ await renderSubscribedChannelsList(); }catch(_){ }
+              }catch(_){ window.__youviSubs = []; }
+
+            const searchInput = document.getElementById('headerSearchInput');
+            if (searchInput) {
+
+              try {
+                const cacheValid = await window.autocompleteCache.isCacheValid(
+                  allVideos.length,
+                  allPlaylists.length
+                );
+                
+                const autocompleteIntegration = new AutocompleteIntegration();
+                await autocompleteIntegration.init(searchInput, {
+                  videoDirectoryHandle: videoDirectoryHandle,
+                  allVideos: cacheValid ? [] : (allVideos || []),
+                  allPlaylists: cacheValid ? [] : (allPlaylists || []),
+                  
+                  onTagSelect: (tagName) => {
+                    searchInput.value = tagName;
+                    applyQueryFromInput();
+                  },
+                  
+                  onVideoSelect: (videoName) => {
+                    window.location.href = `youvi_video.html?v=${encodeURIComponent(videoName)}`;
+                  },
+                  
+                  onPlaylistSelect: (playlistId) => {
+                    window.location.href = `youvi_playlists_view.html?id=${playlistId}`;
+                  },
+                  
+                  onChannelSelect: (channelName) => {
+                    searchInput.value = `channel:${channelName}`;
+                    applyQueryFromInput();
+                  }
+                });
+                debug.log('[Autocomplete] ✅ Initialized on youvi_search.html');
+              } catch (error) {
+                debug.error('[Autocomplete] Failed to initialize:', error);
+              }
+            }
+          }
+        }
+      } catch(e){ debug.error(e); }
+
+      const input = document.getElementById('headerSearchInput');
+      const btn = document.getElementById('headerSearchBtn');
+      const helpBtn = document.getElementById('searchHelpBtn');
+      if (btn) btn.addEventListener('click', ()=> applyQueryFromInput());
+      if (input){
+        input.addEventListener('keypress', (e)=>{ if (e.key==='Enter') applyQueryFromInput(); });
+        input.addEventListener('input', updateSearchIndicators);
+
+        const q = __params.get('q') || '';
+        input.value = q;
+        if (q) runSearch(q); else refreshResults();
+        updateSearchIndicators();
+      }
+
+      if (helpBtn) {
+        helpBtn.addEventListener('click', showSearchHelp);
+      }
+
+      const modal = document.getElementById('searchHelpModal');
+      const closeBtn = document.querySelector('.search-help-close');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', hideSearchHelp);
+      }
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) hideSearchHelp();
+        });
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          hideSearchHelp();
+        }
+      });
+
+      initializeSortingAndFiltering();
+
+      applyViewButtons();
+
+      const applyTypeButtons = ()=>{
+        const btns = [document.getElementById('typeBtnVideos'),document.getElementById('typeBtnPlaylists'),document.getElementById('typeBtnChannels')].filter(Boolean);
+        btns.forEach(b=> b.classList.toggle('active', b && b.dataset.type===currentType));
+      };
+      applyTypeButtons();
+      const viewGrid = document.getElementById('viewBtnGrid');
+      const viewList = document.getElementById('viewBtnList');
+      const viewCompact = document.getElementById('viewBtnCompact');
+      const switchView = (mode)=>{ currentView = mode; localStorage.setItem('youvi_search_view', mode); currentPage=1; applyViewButtons(); updateUrlAndMaybeSearch(); };
+      if (viewGrid) viewGrid.addEventListener('click', ()=> switchView('grid'));
+      if (viewList) viewList.addEventListener('click', ()=> switchView('list'));
+      if (viewCompact) viewCompact.addEventListener('click', ()=> switchView('compact'));
+      const switchType = (type)=>{ currentType = type; localStorage.setItem('youvi_search_type', type); currentPage=1; applyTypeButtons(); updateUrlAndMaybeSearch(); };
+      const typeVideos = document.getElementById('typeBtnVideos');
+      const typePlaylists = document.getElementById('typeBtnPlaylists');
+      const typeChannels = document.getElementById('typeBtnChannels');
+      if (typeVideos) typeVideos.addEventListener('click', ()=> switchType('videos'));
+      if (typePlaylists) typePlaylists.addEventListener('click', ()=> switchType('playlists'));
+      if (typeChannels) typeChannels.addEventListener('click', ()=> switchType('channels'));
+
+
+      try{
+        const settingsBtn = document.getElementById('badgesToggle');
+        if (settingsBtn){
+          settingsBtn.addEventListener('click', (e)=>{ e.preventDefault(); toggleVideoBadges(); });
+          initializeBadgesState();
+        }
+      }catch(_){ }
+    });
+
+    function updateUrlAndMaybeSearch(){
+      const url = new URL(window.location.href);
+      const q = (document.getElementById('headerSearchInput')?.value||'').trim();
+      if (q) url.searchParams.set('q', q); else url.searchParams.delete('q');
+      if (currentType) url.searchParams.set('type', currentType);
+      if (currentView) url.searchParams.set('view', currentView);
+      if (currentPage && currentPage>1) url.searchParams.set('page', String(currentPage)); else url.searchParams.delete('page');
+      window.history.replaceState({}, '', url.toString());
+
+      if (!dataLoaded) {
+        debug.warn('[Search] ⚠️ Данные еще не загружены. Ожидайте...');
+        const empty = document.getElementById('noResults');
+        if (empty) {
+          empty.style.display = 'block';
+          empty.textContent = 'Загрузка данных... Пожалуйста, подождите.';
+        }
+        return;
+      }
+      
+      if (q) runSearch(q); else renderResults([]);
+    }
+
+    function applyQueryFromInput(){
+      updateUrlAndMaybeSearch();
+    }
+
+    function toggleVideoBadges(){
+      const body=document.body; const hidden=body.classList.contains('badges-hidden');
+      if(hidden){ body.classList.remove('badges-hidden'); localStorage.setItem('videoBadgesHidden','false'); }
+      else { body.classList.add('badges-hidden'); localStorage.setItem('videoBadgesHidden','true'); }
+    }
+    function initializeBadgesState(){ const v=localStorage.getItem('videoBadgesHidden'); if(v==='true'){ document.body.classList.add('badges-hidden'); } }
+
+    function showSearchHelp() {
+      const modal = document.getElementById('searchHelpModal');
+      if (modal) {
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function hideSearchHelp() {
+      const modal = document.getElementById('searchHelpModal');
+      if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      }
+    }
+
+
+    function renderPagination(totalPages, totalItems){
+      const container = document.getElementById('paginationContainer'); if(!container) return;
+      if (totalPages <= 1){ container.innerHTML=''; return; }
+      const pag = document.createElement('div'); pag.className='pagination'; pag.style.margin='20px 0 0 0';
+      const info = document.createElement('div'); info.className='pagination-info';
+      const startItem = (currentPage-1)*ITEMS_PER_PAGE + 1;
+      const endItem = Math.min(currentPage*ITEMS_PER_PAGE, totalItems);
+      const ofText = i18n.t('searchPage.paginationOf') || 'из';
+      info.textContent = `${startItem}-${endItem} ${ofText} ${totalItems}`;
+      pag.appendChild(info);
+      const prevText = i18n.t('searchPage.paginationPrev') || '‹ Назад';
+      const nextText = i18n.t('searchPage.paginationNext') || 'Вперед ›';
+      if (currentPage>1){ pag.appendChild(createPageBtn(prevText, currentPage-1)); }
+      const maxVisible = 5; let s=Math.max(1, currentPage-Math.floor(maxVisible/2)); let e=Math.min(totalPages, s+maxVisible-1); if(e-s+1<maxVisible) s=Math.max(1,e-maxVisible+1);
+      if (s>1){ pag.appendChild(createPageBtn('1',1)); if(s>2) pag.appendChild(document.createTextNode(' ... ')); }
+      for(let i=s;i<=e;i++){ const b=createPageBtn(String(i), i); if(i===currentPage) b.classList.add('active'); pag.appendChild(b); }
+      if (e<totalPages){ if(e<totalPages-1) pag.appendChild(document.createTextNode(' ... ')); pag.appendChild(createPageBtn(String(totalPages), totalPages)); }
+      if (currentPage<totalPages){ pag.appendChild(createPageBtn(nextText, currentPage+1)); }
+      container.innerHTML=''; container.appendChild(pag);
+      function createPageBtn(text, page){ const btn=document.createElement('button'); btn.className='btn pagination-btn'; btn.textContent=text; btn.addEventListener('click',()=>{ currentPage=page; updateUrlAndMaybeSearch(); window.scrollTo({ top: 0, behavior: 'smooth' }); }); return btn; }
+    }
+
+    async function toggleSubscription(channelName, btn){
+      try{
+        if (!Array.isArray(window.__youviSubs)) window.__youviSubs = [];
+        const idx = window.__youviSubs.indexOf(channelName);
+        if (idx >= 0){ window.__youviSubs.splice(idx, 1); btn.classList.remove('subscribed'); btn.textContent = i18n.t('searchPage.subscribe') || 'Подписаться'; }
+        else { window.__youviSubs.push(channelName); btn.classList.add('subscribed'); btn.textContent = i18n.t('video.subscribed') || 'Подписан'; }
+        try{ localStorage.setItem('8site_subscriptions', JSON.stringify(window.__youviSubs)); }catch(_){ }
+        if (videoDirectoryHandle){
+          try{
+            const fh = await videoDirectoryHandle.getFileHandle('.subscriptions.json', { create:true });
+            const w = await fh.createWritable();
+            await w.write(JSON.stringify(window.__youviSubs, null, 2));
+            await w.close();
+          }catch(_){ }
+        }
+      }catch(_){ }
+    }
+
+    async function renderSubscribedChannelsList(){
+      try{
+        const cont = document.getElementById('subscribedChannelsContainer'); if(!cont) return;
+        const subs = Array.isArray(window.__youviSubs)?window.__youviSubs:[];
+        cont.innerHTML = '';
+        if (!subs.length){ const el=document.createElement('div'); el.className='sidebar-item'; el.style.cssText='font-style:italic;color:#999;'; el.textContent = i18n.t('sidebar.noSubscriptions') || 'Нет подписок'; cont.appendChild(el); return; }
+        for (const channelName of subs){
+          const link=document.createElement('a'); link.href='#'; link.className='sidebar-item'; link.style.display='flex'; link.style.alignItems='center'; link.style.gap='8px';
+          const av=document.createElement('div'); av.style.cssText='width:20px;height:20px;border-radius:0;background:#ff69b4;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:10px;flex-shrink:0;background-size:cover;background-position:center;background-repeat:no-repeat;'; av.textContent=(channelName||'?').charAt(0).toUpperCase();
+          const text=document.createElement('span'); text.textContent=channelName; text.style.cssText='overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;';
+          link.appendChild(av); link.appendChild(text);
+          link.addEventListener('click',(e)=>{ e.preventDefault(); window.location.href = `youvi_ch_view.html?channel=${encodeURIComponent(channelName)}`; });
+          cont.appendChild(link);
+
+          (async ()=>{
+            try{
+              if (!videoDirectoryHandle) return;
+              const channelsDir = await videoDirectoryHandle.getDirectoryHandle('.channels', { create:true });
+              const chDir = await channelsDir.getDirectoryHandle(channelName, { create:true });
+              const fh = await chDir.getFileHandle('channel.json'); const f = await fh.getFile(); const data = JSON.parse(await f.text());
+              if (data && data.avatar){
+                try{ const imgHandle = await chDir.getFileHandle(data.avatar); const imgFile = await imgHandle.getFile(); const url = URL.createObjectURL(imgFile); av.style.backgroundImage = `url(${url})`; av.textContent=''; }catch(_){ }
+              }
+            }catch(_){ }
+          })();
+        }
+      }catch(_){ }
+    }
+    </script>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-main">
+                <div class="footer-logo">
+                    <img src="images/logo_youvi_ind_ex.png" alt="Youvi" loading="lazy">
+                    <p data-i18n="footer.description">Платформа для просмотра видео контента. Сохраняйте, категоризируйте и смотрите видео.</p>
+                </div>
+                <div class="footer-sections">
+                    <div class="footer-section">
+                        <h3 data-i18n="footer.sections">Разделы</h3>
+                        <ul>
+                            <li><a href="youvi_main.html" data-i18n="footer.video">Видео</a></li>
+                            <li><a href="youvi_tags.html" data-i18n="sidebar.tags">Теги</a></li>
+                            <li><a href="youvi_feed_all.html" data-i18n="nav.feed">Feed</a></li>
+                            <li><a href="index.html" data-i18n="nav.management">Управление</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h3 data-i18n="sidebar.library">Библиотека</h3>
+                        <ul>
+                            <li><a href="youvi_ch_list.html" data-i18n="sidebar.channels">Каналы</a></li>
+                            <li><a href="youvi_playlists_list.html" data-i18n="sidebar.playlists">Плейлисты</a></li>
+                            <li><a href="youvi_subscriptions.html" data-i18n="sidebar.subscriptions">Подписки</a></li>
+                            <li><a href="youvi_fav.html" data-i18n="sidebar.favorites">Избранное</a></li>
+                            <li><a href="youvi_history.html" data-i18n="sidebar.history">История</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h3 data-i18n="nav.wiki">Wiki</h3>
+                        <ul>
+                            <li><a href="wiki/index.html" data-i18n="sidebar.home">Главная</a></li>
+                            <li><a href="wiki/player.html" data-i18n="footer.wiki.player">Плеер</a></li>
+                            <li><a href="wiki/danmaku.html" data-i18n="footer.wiki.danmaku">Данмаку</a></li>
+                            <li><a href="wiki/tags/general.html" data-i18n="sidebar.tags">Теги</a></li>
+                            <li><a href="wiki/tags/rules.html" data-i18n="footer.wiki.taggingRules">Правила тегирования</a></li>
+                            <li><a href="wiki/search/general.html" data-i18n="footer.wiki.search">Поиск</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h3 data-i18n="footer.pgc">PGC</h3>
+                        <ul>
+                            <li><a href="youvi_main.html?tag=Anime (ct)" data-i18n="footer.categories.anime">Anime</a></li>
+                            <li><a href="youvi_main.html?tag=Animation (ct)" data-i18n="footer.categories.animation">Animation</a></li>
+                            <li><a href="youvi_main.html?tag=Movies (ct)" data-i18n="footer.categories.movies">Movies</a></li>
+                            <li><a href="youvi_main.html?tag=Series (ct)" data-i18n="footer.categories.series">Series</a></li>
+                            <li><a href="youvi_main.html?tag=Music (ct)" data-i18n="footer.categories.music">Music</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h3 data-i18n="footer.ugc">UGC</h3>
+                        <ul>
+                            <li><a href="youvi_main.html?tag=Games (ct)" data-i18n="footer.categories.games">Games</a></li>
+                            <li><a href="youvi_main.html?tag=Technology (ct)" data-i18n="footer.categories.tech">Technology</a></li>
+                            <li><a href="youvi_main.html?tag=Entertainment (ct)" data-i18n="footer.categories.entertainment">Entertainment</a></li>
+                            <li><a href="youvi_main.html?tag=IRL (ct)" data-i18n="footer.categories.irl">IRL</a></li>
+                            <li><a href="youvi_main.html?tag=TV (ct)" data-i18n="footer.categories.tv">TV</a></li>
+                            <li><a href="youvi_main.html?tag=Education (ct)" data-i18n="footer.categories.education">Education</a></li>
+                            <li><a href="youvi_main.html?tag=Other (ct)" data-i18n="footer.categories.other">Other</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h3 data-i18n="footer.about">О сайте</h3>
+                        <ul>
+                            <li><a href="wiki/about.html" data-i18n="footer.aboutSite">Про сайт</a></li>
+                            <li><a href="wiki/docs.html" data-i18n="footer.docs">Документация</a></li>
+                            <li><a href="wiki/tech.html" data-i18n="footer.tech">Технологии</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-right">
+                <div class="footer-mascot">
+                    <img src="images/mascot1.png" alt="Yuvi" loading="lazy">
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Tag Database System (for alias support) -->
+    <script src="youvi/tags/tag-database-schema.js"></script>
+    <script src="youvi/tags/tag-database-manager.js"></script>
+    <script src="youvi/tags/tag-alias-search.js"></script>
+    
+    <!-- Sidebar Script -->
+    <script src="youvi/sidebar-toggle.js"></script>
+    <script src="youvi/sidebar-scroll.js"></script>
+    
+    <!-- Theme Toggle Script -->
+    <script src="youvi/themes/theme-toggle.js"></script>
+    
+    <!-- i18n System -->
+    <script src="youvi/i18n/ru.js"></script>
+    <script src="youvi/i18n/en.js"></script>
+    <script src="youvi/i18n/uk.js"></script>
+    <script src="youvi/i18n/i18n.js"></script>
+    
+    <!-- Language Switcher Handler -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const langSwitcher = document.getElementById('langSwitcher');
+            if (langSwitcher) {
+
+                const savedLang = localStorage.getItem('youvi-language') || 'ru';
+                langSwitcher.value = savedLang;
+
+                langSwitcher.addEventListener('change', function() {
+                    const newLang = this.value;
+                    localStorage.setItem('youvi-language', newLang);
+                    if (typeof i18n !== 'undefined' && i18n.setLanguage) {
+                        i18n.setLanguage(newLang);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
